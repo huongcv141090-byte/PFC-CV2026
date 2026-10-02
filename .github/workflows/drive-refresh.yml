@@ -1,0 +1,87 @@
+name: drive-refresh
+
+# Tu dong quet Drive PFC2026 -> rebuild du lieu web -> push (Vercel tu deploy).
+# Kich hoat: dinh ky 30 phut + nut "Quet du lieu moi" tren web (workflow_dispatch).
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/30 * * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Restore Drive files cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .drive-watch
+          key: drive-watch-v1-${{ github.run_id }}
+          restore-keys: |
+            drive-watch-v1-
+
+      - name: Install Python deps
+        run: pip install gdown openpyxl pillow
+
+      - name: Scan Drive for new files
+        id: scan
+        env:
+          DRIVE_WATCH_DIR: ${{ github.workspace }}/.drive-watch
+          DW_VENV_PY: python3
+        run: |
+          mkdir -p .drive-watch/files
+          OUT=$(python3 scripts/drive-watch.py 2>&1)
+          echo "$OUT"
+          if echo "$OUT" | grep -q "NO_NEW_FILES"; then
+            echo "new_files=false" >> "$GITHUB_OUTPUT"
+          elif echo "$OUT" | grep -q "LIST_ERROR"; then
+            echo "Drive list failed"; exit 1
+          else
+            echo "new_files=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Rebuild web data
+        if: steps.scan.outputs.new_files == 'true'
+        env:
+          DRIVE_FILES_DIR: ${{ github.workspace }}/.drive-watch/files
+          WEB_DIR: ${{ github.workspace }}
+        run: |
+          python3 scripts/build-data.py
+          python3 scripts/extract-stages.py
+          python3 -c "import json,datetime; json.dump({'last_sync': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'), 'source': 'drive-pfc2026'}, open('public/data/sync.json','w'), ensure_ascii=False)"
+
+      - name: Verify production build
+        if: steps.scan.outputs.new_files == 'true'
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+
+      - name: Commit and push
+        if: steps.scan.outputs.new_files == 'true'
+        run: |
+          git config user.name "pfc-refresh-bot"
+          git config user.email "pfc-refresh-bot@users.noreply.github.com"
+          git add public/data public/img
+          git diff --cached --quiet && echo "nothing to commit" || git commit -m "Auto-refresh: du lieu moi tu Drive PFC2026 ($(date -u +%Y-%m-%d))"
+          git push
+
+      - name: Save Drive files cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .drive-watch
+          key: drive-watch-v1-${{ github.run_id }}
