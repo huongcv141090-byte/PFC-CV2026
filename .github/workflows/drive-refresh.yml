@@ -62,6 +62,7 @@ jobs:
         run: |
           python3 scripts/build-data.py
           python3 scripts/extract-stages.py
+          python3 scripts/kaizen-engine.py
           python3 -c "import json,datetime; json.dump({'last_sync': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'), 'source': 'drive-pfc2026'}, open('public/data/sync.json','w'), ensure_ascii=False)"
 
       - name: Verify production build
