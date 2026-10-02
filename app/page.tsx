@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { getIndex, getImages } from "@/lib/data-server";
+import { getIndex, getImages, getSyncInfo } from "@/lib/data-server";
 import { imgUrl } from "@/lib/data";
+import RefreshButton from "@/components/RefreshButton";
 
 function StatCard({
   label,
@@ -21,7 +22,7 @@ function StatCard({
 }
 
 export default async function Home() {
-  const [index, images] = await Promise.all([getIndex(), getImages()]);
+  const [index, images, sync] = await Promise.all([getIndex(), getImages(), getSyncInfo()]);
   const totalFiles = index.brands.reduce((n, b) => n + b.files.length, 0);
   const totalSheets = index.brands.reduce(
     (n, b) => n + b.files.reduce((m, f) => m + f.sheets.length, 0),
@@ -41,6 +42,9 @@ export default async function Home() {
           thời gian) và ảnh minh họa từng công đoạn — tất cả trên một giao
           diện duy nhất.
         </p>
+        <div className="mt-4">
+          <RefreshButton lastSync={sync?.last_sync ?? null} />
+        </div>
       </section>
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
