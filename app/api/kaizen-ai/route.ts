@@ -16,6 +16,7 @@ const PROVIDERS = {
   experientiallabs: { label: "ExperientialLabs", defaultModel: "gpt-5.6-luna" },
   apmix: { label: "Apmix", defaultModel: "deepseek-v4.1-flash-free" },
   xai: { label: "Grok (xAI)", defaultModel: "grok-4.7" },
+  groq: { label: "Groq — miễn phí", defaultModel: "llama-3.3-70b-versatile" },
 } as const;
 
 type Provider = keyof typeof PROVIDERS;
@@ -155,6 +156,8 @@ async function callProvider(
       return callOpenAICompatible("https://api.apmix.ai/v1", apiKey, model, prompt);
     case "xai":
       return callOpenAICompatible("https://api.x.ai/v1", apiKey, model, prompt);
+    case "groq":
+      return callOpenAICompatible("https://api.groq.com/openai/v1", apiKey, model, prompt);
     default:
       throw new Error("Nhà cung cấp không được hỗ trợ");
   }

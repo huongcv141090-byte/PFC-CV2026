@@ -17,6 +17,7 @@ export const PROVIDER_DEFAULTS: Record<string, { label: string; model: string }>
   experientiallabs: { label: "ExperientialLabs", model: "gpt-5.6-luna" },
   apmix: { label: "Apmix", model: "deepseek-v4.1-flash-free" },
   xai: { label: "Grok (xAI) — free", model: "grok-4.7" },
+  groq: { label: "Groq — miễn phí", model: "llama-3.3-70b-versatile" },
 };
 
 export function loadSettings(): KaizenAiSettings | null {
