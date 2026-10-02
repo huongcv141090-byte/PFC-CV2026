@@ -150,13 +150,13 @@ export default async function CongDoanBrandPage({
           )}
 
           <ol className="relative border-l-2 border-slate-200 ml-3 space-y-3">
-            {st.cong_doan.map((cd) => {
+            {st.cong_doan.map((cd, idx) => {
               const t = timeRange(cd);
               const thumb = cd.images[0];
               return (
                 <li key={cd.id} className="relative pl-8">
                   <span className="absolute -left-[15px] top-3 flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-white text-xs font-bold">
-                    {cd.stt ?? "·"}
+                    {idx + 1}
                   </span>
                   <Link
                     href={`/cong-doan/${params.brand}/${cd.id}`}

@@ -151,6 +151,7 @@ export default async function CongDoanDetailPage({
                 <thead>
                   <tr className="bg-slate-100 text-left">
                     <th className="border border-slate-200 px-3 py-2 font-medium">Mã hàng</th>
+                    <th className="border border-slate-200 px-3 py-2 font-medium whitespace-nowrap">STT</th>
                     <th className="border border-slate-200 px-3 py-2 font-medium whitespace-nowrap">Thời gian</th>
                     <th className="border border-slate-200 px-3 py-2 font-medium whitespace-nowrap">Người/CĐ</th>
                     <th className="border border-slate-200 px-3 py-2 font-medium">Thiết bị</th>
@@ -162,6 +163,9 @@ export default async function CongDoanDetailPage({
                     <tr key={i} className="odd:bg-white even:bg-slate-50">
                       <td className="border border-slate-200 px-3 py-2 text-xs">
                         {fileNames[f.file] ?? f.file}
+                      </td>
+                      <td className="border border-slate-200 px-3 py-2 text-center">
+                        {f.stt ?? "—"}
                       </td>
                       <td className="border border-slate-200 px-3 py-2 whitespace-nowrap font-medium">
                         {fmtTime(f.thoi_gian_s, f.thoi_gian_raw)}
