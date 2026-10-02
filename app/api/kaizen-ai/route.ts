@@ -1,25 +1,23 @@
 import { NextResponse } from "next/server";
+import {
+  PROVIDERS,
+  callProvider,
+  friendlyError,
+  isProvider,
+} from "@/lib/llm-providers";
 
 /**
  * POST /api/kaizen-ai
  * Body: { provider, apiKey, model?, rec: { type_vi, cong_doan, brand, stage,
- *         score, suggestion, evidence, ref_equipment[] } }
+ *         score, suggestion, evidence, ref_equipment[], n_ghi_nhan?,
+ *         ma_hang?, colors? } }
  *
  * Gọi LLM của nhà cung cấp để phân tích chuyên sâu một đề xuất kaizen.
  * apiKey chỉ dùng trong request này, không lưu, không log.
  */
 
-const PROVIDERS = {
-  gemini: { label: "Google Gemini", defaultModel: "gemini-2.5-flash" },
-  openai: { label: "OpenAI GPT", defaultModel: "gpt-4o-mini" },
-  anthropic: { label: "Anthropic Claude", defaultModel: "claude-3-5-haiku-latest" },
-  experientiallabs: { label: "ExperientialLabs", defaultModel: "gpt-5.6-luna" },
-  apmix: { label: "Apmix", defaultModel: "deepseek-v4.1-flash-free" },
-  xai: { label: "Grok (xAI)", defaultModel: "grok-4.7" },
-  groq: { label: "Groq — miễn phí", defaultModel: "llama-3.3-70b-versatile" },
-} as const;
-
-type Provider = keyof typeof PROVIDERS;
+const SYSTEM =
+  "Bạn là chuyên gia kaizen ngành giày da. Trả lời tiếng Việt đầy đủ, không viết tắt.";
 
 function buildPrompt(rec: Record<string, unknown>): string {
   const eq = Array.isArray(rec.ref_equipment) ? rec.ref_equipment.join(", ") : "";
@@ -50,127 +48,14 @@ TRẢ LỜI THEO ĐÚNG CẤU TRÚC SAU (giữ nguyên các tiêu đề):
 Trình bày súc tích, thực tế, hướng tới người quản lý xưởng.`;
 }
 
-async function callOpenAICompatible(
-  baseUrl: string,
-  apiKey: string,
-  model: string,
-  prompt: string,
-  extraHeaders: Record<string, string> = {}
-): Promise<string> {
-  const res = await fetch(`${baseUrl}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-      ...extraHeaders,
-    },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: "Bạn là chuyên gia kaizen ngành giày da. Trả lời tiếng Việt đầy đủ, không viết tắt." },
-        { role: "user", content: prompt },
-      ],
-      temperature: 0.4,
-      max_tokens: 2000,
-    }),
-  });
-  if (!res.ok) {
-    const t = await res.text().catch(() => "");
-    throw new Error(`HTTP ${res.status}: ${t.slice(0, 200)}`);
-  }
-  const data = await res.json();
-  const text = data?.choices?.[0]?.message?.content;
-  if (!text) throw new Error("Phản hồi rỗng từ nhà cung cấp");
-  return text;
-}
-
-async function callProvider(
-  provider: Provider,
-  apiKey: string,
-  model: string,
-  prompt: string
-): Promise<string> {
-  switch (provider) {
-    case "gemini": {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-goog-api-key": apiKey,
-          },
-          body: JSON.stringify({
-            systemInstruction: {
-              parts: [{ text: "Bạn là chuyên gia kaizen ngành giày da. Trả lời tiếng Việt đầy đủ, không viết tắt." }],
-            },
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.4, maxOutputTokens: 2000 },
-          }),
-        }
-      );
-      if (!res.ok) {
-        const t = await res.text().catch(() => "");
-        throw new Error(`HTTP ${res.status}: ${t.slice(0, 200)}`);
-      }
-      const data = await res.json();
-      const text = data?.candidates?.[0]?.content?.parts
-        ?.map((p: { text?: string }) => p.text ?? "")
-        .join("");
-      if (!text) throw new Error("Phản hồi rỗng từ nhà cung cấp");
-      return text;
-    }
-    case "anthropic": {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true",
-        },
-        body: JSON.stringify({
-          model,
-          max_tokens: 2000,
-          system: "Bạn là chuyên gia kaizen ngành giày da. Trả lời tiếng Việt đầy đủ, không viết tắt.",
-          messages: [{ role: "user", content: prompt }],
-        }),
-      });
-      if (!res.ok) {
-        const t = await res.text().catch(() => "");
-        throw new Error(`HTTP ${res.status}: ${t.slice(0, 200)}`);
-      }
-      const data = await res.json();
-      const text = data?.content
-        ?.filter((b: { type?: string }) => b.type === "text")
-        .map((b: { text?: string }) => b.text ?? "")
-        .join("");
-      if (!text) throw new Error("Phản hồi rỗng từ nhà cung cấp");
-      return text;
-    }
-    case "openai":
-      return callOpenAICompatible("https://api.openai.com/v1", apiKey, model, prompt);
-    case "experientiallabs":
-      return callOpenAICompatible("https://api.experientiallabs.ai/v1", apiKey, model, prompt);
-    case "apmix":
-      return callOpenAICompatible("https://api.apmix.ai/v1", apiKey, model, prompt);
-    case "xai":
-      return callOpenAICompatible("https://api.x.ai/v1", apiKey, model, prompt);
-    case "groq":
-      return callOpenAICompatible("https://api.groq.com/openai/v1", apiKey, model, prompt);
-    default:
-      throw new Error("Nhà cung cấp không được hỗ trợ");
-  }
-}
-
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => null);
-    const provider = body?.provider as Provider | undefined;
+    const provider = body?.provider;
     const apiKey = (body?.apiKey as string | undefined)?.trim();
     const rec = body?.rec as Record<string, unknown> | undefined;
 
-    if (!provider || !(provider in PROVIDERS)) {
+    if (!isProvider(provider)) {
       return NextResponse.json(
         { ok: false, error: "Vui lòng chọn nhà cung cấp AI." },
         { status: 400 }
@@ -192,8 +77,13 @@ export async function POST(req: Request) {
     const model =
       (body?.model as string | undefined)?.trim() ||
       PROVIDERS[provider].defaultModel;
-    const prompt = buildPrompt(rec);
-    const analysis = await callProvider(provider, apiKey, model, prompt);
+    const analysis = await callProvider(
+      provider,
+      apiKey,
+      model,
+      SYSTEM,
+      buildPrompt(rec)
+    );
 
     return NextResponse.json({
       ok: true,
@@ -202,19 +92,7 @@ export async function POST(req: Request) {
       analysis,
     });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "Lỗi không xác định";
-    const low = msg.toLowerCase();
-    const friendly =
-      low.includes("401") || low.includes("api key not valid") || low.includes("invalid_api_key") || low.includes("invalid api key")
-        ? "API key không hợp lệ hoặc đã hết hạn. Anh kiểm tra lại key trong mục Kết nối AI."
-        : low.includes("403")
-          ? "API key không có quyền dùng model này. Anh kiểm tra lại gói hoặc model."
-          : low.includes("429")
-            ? "Nhà cung cấp đang giới hạn tần suất. Anh thử lại sau ít phút."
-            : low.includes("404")
-              ? "Không tìm thấy model. Anh kiểm tra lại tên model."
-              : msg;
-    return NextResponse.json({ ok: false, error: friendly }, { status: 502 });
+    return NextResponse.json({ ok: false, error: friendlyError(e) }, { status: 502 });
   }
 }
 
@@ -222,7 +100,10 @@ export function GET() {
   return NextResponse.json({
     ok: true,
     providers: Object.fromEntries(
-      Object.entries(PROVIDERS).map(([k, v]) => [k, { label: v.label, defaultModel: v.defaultModel }])
+      Object.entries(PROVIDERS).map(([k, v]) => [
+        k,
+        { label: v.label, defaultModel: v.defaultModel },
+      ])
     ),
   });
 }
