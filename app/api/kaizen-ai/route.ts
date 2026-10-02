@@ -15,6 +15,7 @@ const PROVIDERS = {
   anthropic: { label: "Anthropic Claude", defaultModel: "claude-3-5-haiku-latest" },
   experientiallabs: { label: "ExperientialLabs", defaultModel: "gpt-5.6-luna" },
   apmix: { label: "Apmix", defaultModel: "deepseek-v4.1-flash-free" },
+  xai: { label: "Grok (xAI)", defaultModel: "grok-4.7" },
 } as const;
 
 type Provider = keyof typeof PROVIDERS;
@@ -152,6 +153,8 @@ async function callProvider(
       return callOpenAICompatible("https://api.experientiallabs.ai/v1", apiKey, model, prompt);
     case "apmix":
       return callOpenAICompatible("https://api.apmix.ai/v1", apiKey, model, prompt);
+    case "xai":
+      return callOpenAICompatible("https://api.x.ai/v1", apiKey, model, prompt);
     default:
       throw new Error("Nhà cung cấp không được hỗ trợ");
   }
