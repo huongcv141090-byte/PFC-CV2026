@@ -11,3 +11,21 @@ body {
     text-wrap: balance;
   }
 }
+
+@keyframes pfc-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+
+.pfc-shimmer {
+  animation: pfc-shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes pfc-pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.pfc-pulse-soft {
+  animation: pfc-pulse-soft 1.8s ease-in-out infinite;
+}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getIndex, getImages, getSyncInfo } from "@/lib/data-server";
 import { imgUrl, hinhTheList } from "@/lib/data";
 import RefreshButton from "@/components/RefreshButton";
+import LeadershipDashboard from "@/components/LeadershipDashboard";
 
 function StatCard({
   label,
@@ -94,6 +95,8 @@ export default async function Home() {
           );
         })}
       </section>
+
+      <LeadershipDashboard />
 
       <section className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
         <h2 className="font-bold text-lg mb-2">Các loại sheet trong hồ sơ</h2>

@@ -194,11 +194,48 @@ export default function RefreshButton({ lastSync }: { lastSync: string | null })
 
       {(phase === "working" || phase === "done" || phase === "error") && steps.length > 0 && (
         <div className="mt-3 max-w-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
-          <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden mb-3">
+          <div className="flex items-center gap-3 mb-3">
             <div
-              className={`h-full rounded-full transition-all duration-500 ${phase === "error" ? "bg-red-500" : "bg-amber-500"}`}
-              style={{ width: `${pct}%` }}
-            />
+              className={`text-3xl font-extrabold tabular-nums leading-none ${
+                phase === "error"
+                  ? "text-red-500"
+                  : phase === "done"
+                    ? "text-emerald-500"
+                    : "text-amber-500 pfc-pulse-soft"
+              }`}
+            >
+              {pct}%
+            </div>
+            <div className="flex-1">
+              <div className="h-4 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden shadow-inner">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 relative overflow-hidden ${
+                    phase === "error"
+                      ? "bg-gradient-to-r from-red-400 to-red-600"
+                      : phase === "done"
+                        ? "bg-gradient-to-r from-emerald-400 to-emerald-600"
+                        : "bg-gradient-to-r from-amber-400 to-orange-500"
+                  }`}
+                  style={{ width: `${pct}%` }}
+                >
+                  {phase === "working" && (
+                    <div className="absolute inset-y-0 w-2/5 bg-white/40 blur-[2px] pfc-shimmer" />
+                  )}
+                </div>
+              </div>
+              <div className="flex justify-between mt-1">
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Bước {doneCount}/{steps.length}
+                </span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                  {phase === "working"
+                    ? "Đang chạy…"
+                    : phase === "done"
+                      ? "Hoàn tất"
+                      : "Có lỗi"}
+                </span>
+              </div>
+            </div>
           </div>
           <ul className="space-y-1.5">
             {steps.map((s, i) => (
