@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getStages } from "@/lib/data-server";
+import SyncNote from "./SyncNote";
 
 export const metadata = {
   title: "Công đoạn sản xuất — PFC Visual Browser",
@@ -28,6 +29,9 @@ export default async function CongDoanIndexPage() {
         ảnh minh họa trực quan — sắp xếp đúng trình tự sản xuất của từng nhãn
         hàng.
       </p>
+      <div className="mb-6">
+        <SyncNote />
+      </div>
       <div className="grid md:grid-cols-2 gap-4">
         {cards.map(({ b, nCd, nImg, stageNames }) => (
           <Link

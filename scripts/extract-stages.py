@@ -367,8 +367,11 @@ def parse_dmtg(rows, max_row, max_col):
         ten = nval(rows, r, cols["ten"])
         if not stt_raw and not ten:
             continue  # blank spacer row
+        # A "TỔNG ..." row is only a subtotal separator: the same table
+        # continues after it (e.g. GÒ sheets have one continuous STT 1-76
+        # table split by several TỔNG subtotal rows). Skip it, don't stop.
         if "TỔNG" in ten.upper() or "TỔNG" in stt_raw.upper():
-            break
+            continue
         stt = _int_or_none(stt_raw)
         if stt is None or not ten:
             continue

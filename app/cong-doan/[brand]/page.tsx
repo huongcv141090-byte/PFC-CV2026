@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { getStages, getFileNames } from "@/lib/data-server";
 import { imgUrl, type CongDoan } from "@/lib/data";
 import CongDoanGallery from "@/components/CongDoanGallery";
+import CongDoanSearch from "./CongDoanSearch";
+import SyncNote from "../SyncNote";
 
 export async function generateStaticParams() {
   const stages = await getStages();
@@ -64,6 +66,15 @@ export default async function CongDoanBrandPage({
         giải chi tiết, thao tác, thông số, lưu ý và ảnh minh họa.
       </p>
 
+      <CongDoanSearch
+        names={ordered.flatMap((st) =>
+          st.cong_doan.map((cd) => ({ id: cd.id, ten: cd.ten, stage: st.stage }))
+        )}
+      />
+      <div className="mb-4">
+        <SyncNote />
+      </div>
+
       <div className="sticky top-[57px] z-30 bg-slate-50/95 backdrop-blur py-2 mb-6 border-b border-slate-200">
         <div className="flex gap-1.5 overflow-x-auto pb-1">
           {ordered.map((st) => (
@@ -79,7 +90,12 @@ export default async function CongDoanBrandPage({
       </div>
 
       {ordered.map((st) => (
-        <section key={st.stage} id={stageSlug(st.stage)} className="mb-10 scroll-mt-32">
+        <section
+          key={st.stage}
+          id={stageSlug(st.stage)}
+          data-stage-section={st.stage}
+          className="mb-10 scroll-mt-32"
+        >
           <div className="flex items-baseline gap-3 mb-4">
             <h2 className="text-xl font-bold text-slate-900">{st.stage}</h2>
             <span className="text-sm text-slate-500">
@@ -154,7 +170,7 @@ export default async function CongDoanBrandPage({
               const t = timeRange(cd);
               const thumb = cd.images[0];
               return (
-                <li key={cd.id} className="relative pl-8">
+                <li key={cd.id} data-cd-name={cd.ten} className="relative pl-8">
                   <span className="absolute -left-[15px] top-3 flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-white text-xs font-bold">
                     {idx + 1}
                   </span>
@@ -191,6 +207,49 @@ export default async function CongDoanBrandPage({
                       )}
                     </span>
                   </Link>
+                  {cd.files.length > 0 && (
+                    <details className="mt-2 bg-white border border-slate-200 rounded-xl overflow-hidden">
+                      <summary className="px-3 py-2 cursor-pointer text-xs font-medium text-slate-600 hover:bg-slate-50">
+                        Định mức thời gian ({cd.files.length} mã hàng)
+                      </summary>
+                      <div className="overflow-x-auto px-3 pb-3">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="bg-slate-100 text-left">
+                              <th className="border border-slate-200 px-2 py-1 font-medium">Mã hàng</th>
+                              <th className="border border-slate-200 px-2 py-1 font-medium whitespace-nowrap">STT</th>
+                              <th className="border border-slate-200 px-2 py-1 font-medium whitespace-nowrap">Thời gian</th>
+                              <th className="border border-slate-200 px-2 py-1 font-medium whitespace-nowrap">Người/CĐ</th>
+                              <th className="border border-slate-200 px-2 py-1 font-medium">Thiết bị</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {cd.files.map((f, fi) => (
+                              <tr key={fi} className="odd:bg-white even:bg-slate-50">
+                                <td className="border border-slate-200 px-2 py-1">
+                                  {fileNames[f.file] ?? f.file}
+                                </td>
+                                <td className="border border-slate-200 px-2 py-1 text-center">
+                                  {f.stt ?? "—"}
+                                </td>
+                                <td className="border border-slate-200 px-2 py-1 whitespace-nowrap">
+                                  {f.thoi_gian_s != null
+                                    ? `${Number.isInteger(f.thoi_gian_s) ? f.thoi_gian_s : f.thoi_gian_s.toFixed(1)} giây`
+                                    : "—"}
+                                </td>
+                                <td className="border border-slate-200 px-2 py-1 text-center">
+                                  {f.nguoi ?? "—"}
+                                </td>
+                                <td className="border border-slate-200 px-2 py-1">
+                                  {f.thiet_bi ?? "—"}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </details>
+                  )}
                 </li>
               );
             })}

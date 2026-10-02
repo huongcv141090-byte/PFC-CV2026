@@ -75,3 +75,16 @@ export async function getFileNames(): Promise<Record<string, string>> {
   }
   return map;
 }
+
+export interface SyncInfo {
+  last_sync: string;
+  source: string;
+}
+
+export async function getSyncInfo(): Promise<SyncInfo | null> {
+  try {
+    return JSON.parse(await fs.readFile(dataPath("sync.json"), "utf-8"));
+  } catch {
+    return null;
+  }
+}
