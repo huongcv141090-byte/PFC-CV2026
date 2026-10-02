@@ -63,17 +63,21 @@ def fmt_sec(s: float) -> str:
 
 
 # Viet hoa viet tat thiet bi trong du lieu goc (cot MAY MOC-T BI)
+# (tra cuu khong phan biet hoa/thuong; "vắt sổ" o cot thiet_bi va "Máy vắt sổ"
+#  o cot dung_cu la cung mot may -> chuan hoa ve mot ten duy nhat)
 EQUIP_ABBR = {
-    "TC": "Thủ công",
+    "tc": "Thủ công",
     "1k": "Máy may 1 kim",
-    "1K": "Máy may 1 kim",
+    "vắt sổ": "Máy vắt sổ",
+    "lập trình": "Máy may lập trình",  # may may lap trinh (pattern sewing machine)
 }
 
 NO_EQUIP = {"Thủ công"}  # "thu cong" = khong co may, khong tinh la thiet bi
 
 
 def expand_equip(name: str) -> str:
-    return EQUIP_ABBR.get(name.strip(), name.strip())
+    n = name.strip()
+    return EQUIP_ABBR.get(n.lower(), n)
 
 
 MANUAL_HINTS = ["mài tay", "thủ công", "chỉnh sửa", "vệ sinh"]
