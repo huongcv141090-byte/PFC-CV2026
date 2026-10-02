@@ -9,7 +9,7 @@ export const PROVIDERS = {
   anthropic: { label: "Anthropic Claude", defaultModel: "claude-3-5-haiku-latest" },
   experientiallabs: { label: "ExperientialLabs", defaultModel: "gpt-5.6-luna" },
   apmix: { label: "Apmix", defaultModel: "deepseek-v4.1-flash-free" },
-  xai: { label: "Grok (xAI)", defaultModel: "grok-4.7" },  groq: { label: "Groq — miễn phí", defaultModel: "llama-3.3-70b-versatile" },
+  xai: { label: "Grok (xAI)", defaultModel: "grok-4.7" },  groq: { label: "Groq (key miễn phí)", defaultModel: "llama-3.3-70b-versatile" },
   moonshot: { label: "Kimi (Moonshot AI)", defaultModel: "kimi-k3" },
 } as const;
 
