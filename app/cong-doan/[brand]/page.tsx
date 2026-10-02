@@ -1,15 +1,19 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getStages, getFileNames, getSyncInfo, getIndex } from "@/lib/data-server";
-import { imgUrl, hinhTheList, type CongDoan } from "@/lib/data";
+import { imgUrl, hinhTheList, mauSacSlug, type CongDoan } from "@/lib/data";
 import CongDoanGallery from "@/components/CongDoanGallery";
 import CongDoanSearch from "./CongDoanSearch";
+import CongDoanFilters from "./CongDoanFilters";
 import RefreshButton from "@/components/RefreshButton";
 
 export async function generateStaticParams() {
   const stages = await getStages();
   return Object.keys(stages.brands).map((brand) => ({ brand }));
 }
+
+// filter via ?ht=&mau= needs server rendering per request
+export const dynamic = "force-dynamic";
 
 function stageSlug(s: string) {
   return s
@@ -38,8 +42,10 @@ function splitSteps(text: string): string[] {
 
 export default async function CongDoanBrandPage({
   params,
+  searchParams,
 }: {
   params: { brand: string };
+  searchParams?: { ht?: string; mau?: string };
 }) {
   const stages = await getStages();
   const b = stages.brands[params.brand];
@@ -47,7 +53,7 @@ export default async function CongDoanBrandPage({
   const fileNames = await getFileNames();
   const sync = await getSyncInfo();
 
-  // file -> hinh_the / colors maps for the filters
+  // file -> hinh_the / colors maps
   const index = await getIndex();
   const brandInfo = index.brands.find((x) => x.id === params.brand);
   const fileHinhThe: Record<string, string> = {};
@@ -57,29 +63,62 @@ export default async function CongDoanBrandPage({
     fileColors[`${params.brand}/${f.id}`] = f.colors ?? [];
   }
   const hts = brandInfo ? hinhTheList(brandInfo) : [];
-  const cdHinhThe = (cd: CongDoan) =>
-    Array.from(
-      new Set(cd.files.map((f) => fileHinhThe[f.file]).filter(Boolean))
-    ).join("|");
-  const cdColors = (cd: CongDoan) =>
-    Array.from(
-      new Set(cd.files.flatMap((f) => fileColors[f.file] ?? []))
-    ).join("|");
-  // color -> hinh_thes containing it (for scoping the color dropdown)
-  const colorHts: Record<string, Set<string>> = {};
-  for (const f of brandInfo?.files ?? []) {
-    for (const c of f.colors ?? []) {
-      if (!colorHts[c]) colorHts[c] = new Set();
-      colorHts[c].add(f.hinh_the);
-    }
-  }
-  const colorOptions = Object.entries(colorHts)
-    .map(([name, s]) => ({ name, hts: Array.from(s) }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+
+  // resolve filter params -> names
+  const htName = hts.find((h) => h.slug === searchParams?.ht)?.name ?? null;
+  const allColors = Array.from(
+    new Set((brandInfo?.files ?? []).flatMap((f) => f.colors ?? []))
+  ).sort((a, b) => a.localeCompare(b));
+  const mauName = allColors.find((c) => mauSacSlug(c) === searchParams?.mau) ?? null;
+  const scoped = !!(htName || mauName);
+
+  const inScope = (fileRef: string) => {
+    if (htName && fileHinhThe[fileRef] !== htName) return false;
+    if (mauName && !(fileColors[fileRef] ?? []).includes(mauName)) return false;
+    return true;
+  };
+
+  // filter options for the dropdowns (slugs for URLs)
+  const htOptions = hts.map((h) => ({ name: h.name, slug: h.slug }));
+  const mauOptions = allColors.map((c) => ({
+    name: c,
+    slug: mauSacSlug(c),
+    htSlugs: hts.filter((h) => h.files.some((f) => (f.colors ?? []).includes(c))).map((h) => h.slug),
+  }));
 
   const ordered = stages.order
     .map((name) => b.stages[name])
-    .filter(Boolean);
+    .filter(Boolean)
+    .map((st) => ({
+      ...st,
+      cong_doan: st.cong_doan
+        .map((cd) => ({ ...cd, files: cd.files.filter((f) => inScope(f.file)) }))
+        .filter((cd) => cd.files.length > 0),
+      bang_chi_tiet: st.bang_chi_tiet.filter((t) => inScope(t.file)),
+    }))
+    .filter((st) => st.cong_doan.length > 0);
+
+  const totalCd = ordered.reduce((n, st) => n + st.cong_doan.length, 0);
+
+  // badges for a cong doan card (from its scoped files) — links to scoped views
+  const cdBadges = (cd: CongDoan) => {
+    const htSet = new Map<string, string>();
+    const colorSet = new Set<string>();
+    for (const f of cd.files) {
+      const htn = fileHinhThe[f.file];
+      if (htn) {
+        const h = hts.find((x) => x.name === htn);
+        if (h) htSet.set(h.slug, h.name);
+      }
+      for (const c of fileColors[f.file] ?? []) colorSet.add(c);
+    }
+    return {
+      hts: Array.from(htSet.entries()),
+      colors: Array.from(colorSet).sort((a, b) => a.localeCompare(b)),
+    };
+  };
+
+  const scopeLabel = [htName, mauName].filter(Boolean).join(" · ");
 
   return (
     <div>
@@ -97,13 +136,44 @@ export default async function CongDoanBrandPage({
         giải chi tiết, thao tác, thông số, lưu ý và ảnh minh họa.
       </p>
 
-      <CongDoanSearch
-        names={ordered.flatMap((st) =>
-          st.cong_doan.map((cd) => ({ id: cd.id, ten: cd.ten, stage: st.stage }))
-        )}
-        hinhThes={hts.map((h) => h.name)}
-        colorOptions={colorOptions}
-      />
+      <div className="flex flex-col md:flex-row gap-2 md:items-start mb-2">
+        <div className="flex-1">
+          <CongDoanSearch
+            names={ordered.flatMap((st) =>
+              st.cong_doan.map((cd) => ({ id: cd.id, ten: cd.ten, stage: st.stage }))
+            )}
+          />
+        </div>
+        <CongDoanFilters hinhThes={htOptions} mauOptions={mauOptions} />
+      </div>
+
+      {scoped && (
+        <div className="mb-3 flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-slate-500 dark:text-slate-400">
+            Đang xem phạm vi:
+          </span>
+          {htName && (
+            <Link
+              href={`/cong-doan/${params.brand}${mauName ? `?mau=${mauSacSlug(mauName)}` : ""}`}
+              className="text-xs font-medium px-2.5 py-1 rounded-full bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 hover:opacity-80"
+            >
+              {htName} ✕
+            </Link>
+          )}
+          {mauName && (
+            <Link
+              href={`/cong-doan/${params.brand}${htName ? `?ht=${hts.find((h) => h.name === htName)?.slug}` : ""}`}
+              className="text-xs font-medium px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 hover:opacity-80"
+            >
+              {mauName} ✕
+            </Link>
+          )}
+          <span className="text-xs text-slate-500 dark:text-slate-400">
+            — {totalCd} công đoạn
+          </span>
+        </div>
+      )}
+
       <div className="mb-4">
         <RefreshButton lastSync={sync?.last_sync ?? null} />
       </div>
@@ -121,6 +191,15 @@ export default async function CongDoanBrandPage({
           ))}
         </div>
       </div>
+
+      {ordered.length === 0 && (
+        <p className="text-sm text-slate-500 dark:text-slate-400 py-10 text-center">
+          Không có công đoạn nào trong phạm vi đã chọn —{" "}
+          <Link href={`/cong-doan/${params.brand}`} className="text-amber-700 dark:text-amber-400 hover:underline">
+            xem tất cả
+          </Link>
+        </p>
+      )}
 
       {ordered.map((st) => (
         <section
@@ -202,13 +281,13 @@ export default async function CongDoanBrandPage({
             {st.cong_doan.map((cd, idx) => {
               const t = timeRange(cd);
               const thumb = cd.images[0];
+              const badges = cdBadges(cd);
               return (
-                <li key={cd.id} data-cd-name={cd.ten} data-ht={cdHinhThe(cd)} data-colors={cdColors(cd)} className="relative pl-8">
+                <li key={cd.id} data-cd-name={cd.ten} className="relative pl-8">
                   <span className="absolute -left-[15px] top-3 flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 dark:bg-amber-400 text-white dark:text-slate-900 text-xs font-bold">
                     {idx + 1}
                   </span>
-                  <Link
-                    href={`/cong-doan/${params.brand}/${cd.id}`}
+                  <div
                     className="flex gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 hover:shadow-md hover:border-amber-300 transition"
                   >
                     {thumb ? (
@@ -224,26 +303,58 @@ export default async function CongDoanBrandPage({
                         ◈
                       </span>
                     )}
-                    <span className="min-w-0">
-                      <span className="block font-semibold text-slate-900 dark:text-slate-100 leading-snug">
+                    <span className="min-w-0 flex-1">
+                      <Link
+                        href={`/cong-doan/${params.brand}/${cd.id}`}
+                        className="block font-semibold text-slate-900 dark:text-slate-100 leading-snug hover:text-amber-700 dark:hover:text-amber-400"
+                      >
                         {cd.ten}
-                      </span>
+                      </Link>
                       <span className="block text-xs text-slate-500 dark:text-slate-400 mt-1">
                         {[t ? `⏱ ${t}` : null, `${cd.files.length} mã hàng`, `${cd.images.length} ảnh`]
                           .filter(Boolean)
                           .join(" · ")}
                       </span>
+                      {(badges.hts.length > 0 || badges.colors.length > 0) && (
+                        <span className="flex flex-wrap gap-1 mt-1.5">
+                          {badges.hts.map(([slug, name]) => (
+                            <Link
+                              key={slug}
+                              href={`/cong-doan/${params.brand}?ht=${slug}${mauName ? `&mau=${mauSacSlug(mauName)}` : ""}`}
+                              className="text-[10px] px-1.5 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 font-medium hover:opacity-80"
+                              title={`Xem hình thể ${name}`}
+                            >
+                              {name}
+                            </Link>
+                          ))}
+                          {badges.colors.slice(0, 4).map((c) => (
+                            <Link
+                              key={c}
+                              href={`/cong-doan/${params.brand}?${htName ? `ht=${hts.find((h) => h.name === htName)?.slug}&` : ""}mau=${mauSacSlug(c)}`}
+                              className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-medium hover:opacity-80"
+                              title={`Xem màu ${c}`}
+                            >
+                              {c}
+                            </Link>
+                          ))}
+                          {badges.colors.length > 4 && (
+                            <span className="text-[10px] px-1 py-0.5 text-slate-400">
+                              +{badges.colors.length - 4} màu
+                            </span>
+                          )}
+                        </span>
+                      )}
                       {cd.files[0]?.dien_giai?.[0] && (
                         <span className="block text-xs text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">
                           {splitSteps(cd.files[0].dien_giai[0])[0]}
                         </span>
                       )}
                     </span>
-                  </Link>
+                  </div>
                   {cd.files.length > 0 && (
                     <details className="mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
                       <summary className="px-3 py-2 cursor-pointer text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-950">
-                        Định mức thời gian ({cd.files.length} mã hàng)
+                        Định mức thời gian ({cd.files.length} mã hàng{scopeLabel ? ` — ${scopeLabel}` : ""})
                       </summary>
                       <div className="overflow-x-auto px-3 pb-3">
                         <table className="w-full text-xs">
