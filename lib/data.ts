@@ -60,6 +60,7 @@ export interface CongDoan {
   ten: string;
   files: CongDoanFileEntry[];
   images: string[];
+  qtcn_thao_tac?: string[];
 }
 
 export interface ChiTietTable {

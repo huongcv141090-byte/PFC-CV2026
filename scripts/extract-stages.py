@@ -12,8 +12,8 @@ Sheet cells are batch-read once via iter_rows (read_only random access is slow).
 
 Output: <web>/public/data/stages.json
 """
-import os, re, json, hashlib, zipfile
-from collections import Counter
+import os, re, json, hashlib, zipfile, unicodedata
+from collections import Counter, defaultdict
 import xml.etree.ElementTree as ET
 from openpyxl import load_workbook
 
@@ -196,6 +196,93 @@ def detect_dmtg(rows):
             if "ĐỊNH MỨC THỜI GIAN" in nval(rows, r, c).upper():
                 return True
     return False
+
+
+_QT_STOP = {"va", "cua", "cho", "voi", "cac", "de", "duoc", "theo", "trong",
+            "tren", "lan", "mat"}
+
+
+def _qt_norm(s):
+    s = unicodedata.normalize("NFD", str(s).lower())
+    s = "".join(c for c in s if unicodedata.category(c) != "Mn")
+    s = s.replace("đ", "d")
+    s = re.sub(r"[^a-z0-9\s]", " ", s)
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def _qt_toks(s):
+    return {t for t in _qt_norm(s).split() if t and t not in _QT_STOP}
+
+
+def qtcn_match_score(a, b):
+    """Name similarity between a DMTG cong doan and a QTCN step.
+
+    Jaccard on significant tokens, requires >=60% coverage of the shorter
+    name; numeric tokens (lan 1/2/...) must agree when both sides have them.
+    """
+    A, B = _qt_toks(a), _qt_toks(b)
+    if not A or not B:
+        return 0.0
+    inter = A & B
+    if len(inter) / min(len(A), len(B)) < 0.6:
+        return 0.0
+    na = {t for t in A if t.isdigit()}
+    nb = {t for t in B if t.isdigit()}
+    if na and nb and na.isdisjoint(nb):
+        return 0.0
+    j = len(inter) / len(A | B)
+    if na and nb and not na.isdisjoint(nb):
+        j += 0.2
+    return j
+
+
+def parse_qtcn_steps(rows, max_row, anchors):
+    """Extract LUU TRINH steps (+ their images) from QTCN process sheets.
+
+    Step header: a cell starting with "LƯU TRÌNH" (any row); the step name
+    is the first non-empty cell below it; the step spans until the next
+    header. Images are anchored rows (0-based) mapped into the span.
+    """
+    headers = []
+    for r in range(1, max_row + 1):
+        for c in range(1, min(len(rows[r]), 12)):
+            if nval(rows, r, c).upper().startswith("LƯU TRÌNH"):
+                headers.append(r)
+                break
+    steps = []
+    for i, hr in enumerate(headers):
+        end = (headers[i + 1] - 1) if i + 1 < len(headers) else max_row
+        name = ""
+        for r in range(hr + 1, min(hr + 5, end + 1)):
+            for c in range(1, min(len(rows[r]), 12)):
+                v = nval(rows, r, c)
+                if v and not v.upper().startswith("LƯU TRÌNH"):
+                    name = v
+                    break
+            if name:
+                break
+        imgs = [md5 for (md5, r0, _c0) in anchors if hr <= r0 + 1 <= end]
+        # operation instructions: rows under a "THAO TÁC" header in col B
+        thao_tac = []
+        in_tt = False
+        for r in range(hr, end + 1):
+            b = nval(rows, r, 2)
+            bu = b.upper()
+            if bu == "THAO TÁC":
+                in_tt = True
+                continue
+            if in_tt:
+                if (bu.startswith("LƯU TRÌNH") or bu.startswith("KHÁCH HÀNG")
+                        or bu.startswith("CÔNG TY") or not b):
+                    if bu.startswith("LƯU TRÌNH") or bu.startswith("KHÁCH HÀNG"):
+                        break
+                    continue
+                if len(b) > 3:
+                    thao_tac.append(b)
+        if name or imgs:
+            steps.append({"name": name or f"Lưu trình {i + 1}",
+                          "images": imgs, "thao_tac": thao_tac})
+    return steps
 
 
 # ------------------------------------------------------- luu trinh parse ---
@@ -455,6 +542,7 @@ def main():
         groups = {}
         chitiet = {}
         qtcn_images = {}
+        qtcn_steps = defaultdict(list)  # (stage,) -> [{name, images}]
         for root, _d, fs in os.walk(bdir):
             for f in sorted(fs):
                 if not f.lower().endswith(".xlsx") or f.startswith("~$"):
@@ -494,7 +582,8 @@ def main():
                             print(f"  !! read {f}/{sname}: {e}", flush=True)
                             continue
                         try:
-                            if detect_luutrinh(rows):
+                            handled = detect_luutrinh(rows)
+                            if handled:
                                 stats["luutrinh_sheets"] += 1
                                 tables, blocks = parse_luutrinh(rows, max_row, min(max_col, 71))
                                 for tbl in tables:
@@ -513,6 +602,7 @@ def main():
                                                  images=imgs)
                                     stats["luutrinh_blocks"] += 1
                             elif detect_dmtg(rows):
+                                handled = True
                                 stats["dmtg_sheets"] += 1
                                 for row in parse_dmtg(rows, max_row, min(max_col, 71)):
                                     add_congdoan(groups, bid, stage, file_ref, sname,
@@ -523,6 +613,19 @@ def main():
                                                  thiet_bi=row["thiet_bi"],
                                                  ghi_chu=row["ghi_chu"])
                                     stats["dmtg_rows"] += 1
+                            if not handled:
+                                # QTCN process sheets whose LUU TRINH steps sit
+                                # deeper than detect_luutrinh scans: extract
+                                # steps + images for cross-matching to DMTG
+                                # cong doan below.
+                                qst = qtcn_stage(sname)
+                                if qst:
+                                    for stp in parse_qtcn_steps(
+                                            rows, max_row,
+                                            anchors.get(sname, [])):
+                                        if stp["images"]:
+                                            qtcn_steps[qst].append(stp)
+                                            stats["qtcn_steps"] += 1
                         except Exception as e:
                             print(f"  !! parse {f}/{sname}: {e}", flush=True)
                 finally:
@@ -536,6 +639,24 @@ def main():
             seen = set()
             rec["images"] = [m for m in rec["images"]
                              if not (m in seen or seen.add(m))]
+            if not rec["images"]:
+                # Map QTCN step images onto imageless (DMTG) cong doan by
+                # name similarity, so each operation shows its own photos.
+                best, best_s = None, 0.0
+                for stp in qtcn_steps.get(stage, []):
+                    s = qtcn_match_score(rec["ten"], stp["name"])
+                    if s > best_s:
+                        best, best_s = stp, s
+                if best and best_s >= 0.5:
+                    for m in best["images"]:
+                        if m not in rec["images"] and len(rec["images"]) < 15:
+                            rec["images"].append(m)
+                    if best.get("thao_tac"):
+                        seen_tt = set()
+                        rec["qtcn_thao_tac"] = [
+                            t for t in best["thao_tac"]
+                            if not (t in seen_tt or seen_tt.add(t))]
+                    stats["qtcn_matched"] += 1
             st["cong_doan"].append(rec)
         for stage, lst in chitiet.items():
             st = data["brands"][bid]["stages"].setdefault(

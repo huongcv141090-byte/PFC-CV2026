@@ -280,7 +280,7 @@ export default async function CongDoanBrandPage({
           <ol className="relative border-l-2 border-slate-200 dark:border-slate-700 ml-3 space-y-3">
             {st.cong_doan.map((cd, idx) => {
               const t = timeRange(cd);
-              const thumb = cd.images[0];
+              const thumbs = cd.images.slice(0, 3);
               const badges = cdBadges(cd);
               return (
                 <li key={cd.id} data-cd-name={cd.ten} className="relative pl-8">
@@ -290,14 +290,23 @@ export default async function CongDoanBrandPage({
                   <div
                     className="flex gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 hover:shadow-md hover:border-amber-300 transition"
                   >
-                    {thumb ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={imgUrl(thumb)}
-                        alt={cd.ten}
-                        loading="lazy"
-                        className="h-16 w-16 shrink-0 rounded-lg object-cover bg-slate-100 dark:bg-slate-800"
-                      />
+                    {thumbs.length > 0 ? (
+                      <Link
+                        href={`/cong-doan/${params.brand}/${cd.id}`}
+                        className="flex shrink-0 -space-x-3"
+                        title={`Xem ${cd.images.length} ảnh thao tác`}
+                      >
+                        {thumbs.map((th, i) => (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            key={th}
+                            src={imgUrl(th)}
+                            alt={`${cd.ten} ${i + 1}`}
+                            loading="lazy"
+                            className="h-16 w-16 rounded-lg object-cover bg-slate-100 dark:bg-slate-800 ring-2 ring-white dark:ring-slate-900"
+                          />
+                        ))}
+                      </Link>
                     ) : (
                       <span className="h-16 w-16 shrink-0 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-300 text-xl">
                         ◈

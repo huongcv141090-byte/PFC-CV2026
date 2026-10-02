@@ -104,6 +104,24 @@ export default async function CongDoanDetailPage({
       <div className="space-y-8">
         <CongDoanGallery images={cd.images} title={cd.ten} />
 
+        {((cd as { qtcn_thao_tac?: string[] }).qtcn_thao_tac?.length ?? 0) > 0 && (
+          <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
+            <h2 className="text-lg font-semibold mb-3">
+              Thao tác <span className="text-xs font-normal text-slate-400">(từ Quy trình công nghệ)</span>
+            </h2>
+            <ol className="space-y-2.5">
+              {(cd as { qtcn_thao_tac?: string[] }).qtcn_thao_tac!.map((s, i) => (
+                <li key={i} className="flex gap-3 text-slate-700 dark:text-slate-300 leading-relaxed">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-400 text-xs font-bold mt-0.5">
+                    {i + 1}
+                  </span>
+                  <span>{s.replace(/^\d+\.\s*/, "")}</span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+
         {steps.length > 0 && (
           <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
             <h2 className="text-lg font-semibold mb-3">
