@@ -9,8 +9,7 @@ export const PROVIDERS = {
   anthropic: { label: "Anthropic Claude", defaultModel: "claude-3-5-haiku-latest" },
   experientiallabs: { label: "ExperientialLabs", defaultModel: "gpt-5.6-luna" },
   apmix: { label: "Apmix", defaultModel: "deepseek-v4.1-flash-free" },
-  xai: { label: "Grok (xAI)", defaultModel: "grok-4.7" },
-  groq: { label: "Groq — miễn phí", defaultModel: "llama-3.3-70b-versatile" },
+  xai: { label: "Grok (xAI)", defaultModel: "grok-4.7" },  groq: { label: "Groq — miễn phí", defaultModel: "llama-3.3-70b-versatile" },
   moonshot: { label: "Kimi (Moonshot AI)", defaultModel: "kimi-k3" },
 } as const;
 
@@ -50,7 +49,15 @@ async function callOpenAICompatible(
   }
   const data = await res.json();
   const text = data?.choices?.[0]?.message?.content;
-  if (!text) throw new Error("Phản hồi rỗng từ nhà cung cấp");
+  if (!text) {
+    const keys =
+      data && typeof data === "object" ? Object.keys(data).join(", ") : "?";
+    throw new Error(
+      `Nhà cung cấp trả về phản hồi rỗng (cấu trúc: ${keys}). ` +
+        "Thường do API key không có quyền dùng model này hoặc tài khoản chưa bật thanh toán. " +
+        "Anh kiểm tra lại key và tên model, hoặc thử nhà cung cấp khác."
+    );
+  }
   return text;
 }
 
@@ -87,7 +94,10 @@ export async function callProvider(
       const text = data?.candidates?.[0]?.content?.parts
         ?.map((p: { text?: string }) => p.text ?? "")
         .join("");
-      if (!text) throw new Error("Phản hồi rỗng từ nhà cung cấp");
+      if (!text)
+        throw new Error(
+          "Nhà cung cấp trả về phản hồi rỗng. Anh kiểm tra lại API key và tên model, hoặc thử nhà cung cấp khác."
+        );
       return text;
     }
     case "anthropic": {
@@ -115,7 +125,10 @@ export async function callProvider(
         ?.filter((b: { type?: string }) => b.type === "text")
         .map((b: { text?: string }) => b.text ?? "")
         .join("");
-      if (!text) throw new Error("Phản hồi rỗng từ nhà cung cấp");
+      if (!text)
+        throw new Error(
+          "Nhà cung cấp trả về phản hồi rỗng. Anh kiểm tra lại API key và tên model, hoặc thử nhà cung cấp khác."
+        );
       return text;
     }
     case "openai":

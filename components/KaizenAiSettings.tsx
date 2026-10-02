@@ -16,7 +16,7 @@ export const PROVIDER_DEFAULTS: Record<string, { label: string; model: string }>
   anthropic: { label: "Anthropic Claude", model: "claude-3-5-haiku-latest" },
   experientiallabs: { label: "ExperientialLabs", model: "gpt-5.6-luna" },
   apmix: { label: "Apmix", model: "deepseek-v4.1-flash-free" },
-  xai: { label: "Grok (xAI) — free", model: "grok-4.7" },
+  xai: { label: "Grok (xAI)", model: "grok-4.7" },
   groq: { label: "Groq — miễn phí", model: "llama-3.3-70b-versatile" },
   moonshot: { label: "Kimi (Moonshot AI)", model: "kimi-k3" },
 };
