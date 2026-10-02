@@ -36,6 +36,20 @@ def slugify(name: str) -> str:
     return s or "file"
 
 
+def hinh_the_for(group: str | None, filename: str) -> str:
+    """Hinh the (product silhouette): subfolder name, or parsed from filename.
+
+    e.g. JILEON/ANKLE BOOTS/*.xlsx -> "ANKLE BOOTS";
+    260627_PFC_ADIDAS RAINBOOT W.xlsx -> "RAINBOOT W".
+    """
+    if group:
+        return group
+    m = re.match(r"^\d+_PFC_[A-Za-z]+\s+(.+)\.xlsx?$", filename, re.I)
+    if m:
+        return re.sub(r"\s+", " ", m.group(1)).strip().upper()
+    return "KHÁC"
+
+
 def read_sheets(path: str):
     from openpyxl import load_workbook
     wb = load_workbook(path, read_only=True, data_only=True)
@@ -158,6 +172,7 @@ def main() -> int:
                 "id": fid,
                 "name": os.path.basename(path),
                 "group": group,
+                "hinh_the": hinh_the_for(group, os.path.basename(path)),
                 "sizeMB": size_mb,
                 "sheets": sheets,
                 "images": sorted(set(md5s)),

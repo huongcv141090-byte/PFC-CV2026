@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { FileInfo, ImageMeta } from "@/lib/data";
-import { imgUrl, formatMB } from "@/lib/data";
+import { imgUrl, formatMB, hinhTheSlug } from "@/lib/data";
 import Lightbox, { useLightbox, type LightboxImage } from "./Lightbox";
 
 export default function FileDetail({
@@ -35,6 +35,13 @@ export default function FileDetail({
           /{" "}
           <a href={`/brand/${brandId}`} className="hover:underline">
             {brandName}
+          </a>{" "}
+          /{" "}
+          <a
+            href={`/brand/${brandId}/hinh-the/${hinhTheSlug(file.hinh_the)}`}
+            className="hover:underline"
+          >
+            {file.hinh_the}
           </a>{" "}
           / Chi tiết file
         </p>

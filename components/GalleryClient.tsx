@@ -16,19 +16,34 @@ export default function GalleryClient({
   items,
   brands,
   fileNames,
+  fileHinhThe,
+  hinhThes,
 }: {
   items: GalleryItem[];
   brands: { id: string; name: string }[];
   fileNames: Record<string, string>;
+  fileHinhThe: Record<string, string>;
+  hinhThes: { brandId: string; brandName: string; name: string }[];
 }) {
   const [brand, setBrand] = useState<string>("all");
+  const [ht, setHt] = useState<string>("all");
   const [q, setQ] = useState("");
   const lb = useLightbox();
+
+  const htOptions = useMemo(
+    () =>
+      brand === "all"
+        ? hinhThes
+        : hinhThes.filter((h) => h.brandId === brand),
+    [brand, hinhThes]
+  );
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
     return items.filter((it) => {
       if (brand !== "all" && !it.files.some((f) => f.startsWith(brand + "/")))
+        return false;
+      if (ht !== "all" && !it.files.some((f) => fileHinhThe[f] === ht))
         return false;
       if (needle) {
         const hay = it.files
@@ -38,7 +53,7 @@ export default function GalleryClient({
       }
       return true;
     });
-  }, [items, brand, q, fileNames]);
+  }, [items, brand, ht, q, fileNames, fileHinhThe]);
 
   const lbImages: LightboxImage[] = filtered.map((it, i) => ({
     md5: it.md5,
@@ -70,9 +85,9 @@ export default function GalleryClient({
       </div>
 
       <div className="flex flex-col md:flex-row gap-3">
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button
-            onClick={() => setBrand("all")}
+            onClick={() => { setBrand("all"); setHt("all"); }}
             className={`px-4 py-2 rounded-lg text-sm font-medium border transition ${
               brand === "all"
                 ? "bg-slate-900 text-white border-slate-900"
@@ -84,7 +99,7 @@ export default function GalleryClient({
           {brands.map((b) => (
             <button
               key={b.id}
-              onClick={() => setBrand(b.id)}
+              onClick={() => { setBrand(b.id); setHt("all"); }}
               className={`px-4 py-2 rounded-lg text-sm font-medium border transition ${
                 brand === b.id
                   ? "bg-slate-900 text-white border-slate-900"
@@ -95,12 +110,27 @@ export default function GalleryClient({
             </button>
           ))}
         </div>
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Tìm theo tên file chứa ảnh…"
-          className="w-full md:w-72 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-        />
+        <div className="flex gap-3 flex-col sm:flex-row">
+          <select
+            value={ht}
+            onChange={(e) => setHt(e.target.value)}
+            className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+            aria-label="Lọc theo hình thể"
+          >
+            <option value="all">Tất cả hình thể</option>
+            {htOptions.map((h) => (
+              <option key={`${h.brandId}|${h.name}`} value={h.name}>
+                {brand === "all" ? `${h.brandName} — ` : ""}{h.name}
+              </option>
+            ))}
+          </select>
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Tìm theo tên file chứa ảnh…"
+            className="w-full md:w-72 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+          />
+        </div>
       </div>
 
       {filtered.length === 0 ? (

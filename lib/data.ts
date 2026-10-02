@@ -10,6 +10,7 @@ export interface FileInfo {
   id: string;
   name: string;
   group: string | null;
+  hinh_the: string;
   sizeMB: number;
   sheets: SheetInfo[];
   images: string[];
@@ -81,4 +82,37 @@ export interface StagesData {
 
 export function formatMB(mb: number) {
   return `${mb.toFixed(1)} MB`;
+}
+
+export function hinhTheSlug(ht: string): string {
+  const s = ht
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\u0111/g, "d")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/-{2,}/g, "-")
+    .replace(/^-|-$/g, "");
+  return s || "khac";
+}
+
+
+export interface HinhThe {
+  name: string;
+  slug: string;
+  files: FileInfo[];
+}
+
+export function hinhTheList(brand: BrandInfo): HinhThe[] {
+  const map = new Map<string, FileInfo[]>();
+  for (const f of brand.files) {
+    const ht = f.hinh_the || "KHÁC";
+    if (!map.has(ht)) map.set(ht, []);
+    map.get(ht)!.push(f);
+  }
+  return Array.from(map.entries()).map(([name, files]) => ({
+    name,
+    slug: hinhTheSlug(name),
+    files,
+  }));
 }

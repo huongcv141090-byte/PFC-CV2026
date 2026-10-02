@@ -17,8 +17,15 @@ function norm(s: string): string {
 }
 
 
-export default function CongDoanSearch({ names }: { names: CdNameEntry[] }) {
+export default function CongDoanSearch({
+  names,
+  hinhThes,
+}: {
+  names: CdNameEntry[];
+  hinhThes: string[];
+}) {
   const [q, setQ] = useState("");
+  const [ht, setHt] = useState("all");
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState<number | null>(null);
 
@@ -29,12 +36,21 @@ export default function CongDoanSearch({ names }: { names: CdNameEntry[] }) {
     return names.filter((n) => norm(n.ten).includes(nq)).slice(0, 8);
   }, [nq, names]);
 
-  function applyFilter(query: string) {
+  function matches(el: HTMLElement, nqq: string, htVal: string): boolean {
+    if (nqq && !norm(el.dataset.cdName ?? "").includes(nqq)) return false;
+    if (htVal !== "all") {
+      const hts = (el.dataset.ht ?? "").split("|");
+      if (!hts.includes(htVal)) return false;
+    }
+    return true;
+  }
+
+  function applyFilter(query: string, htVal: string) {
     const nqq = norm(query.trim());
     const items = document.querySelectorAll<HTMLElement>("li[data-cd-name]");
     let visible = 0;
     items.forEach((el) => {
-      const hit = !nqq || norm(el.dataset.cdName ?? "").includes(nqq);
+      const hit = matches(el, nqq, htVal);
       el.style.display = hit ? "" : "none";
       if (hit) visible++;
     });
@@ -46,25 +62,31 @@ export default function CongDoanSearch({ names }: { names: CdNameEntry[] }) {
         ).some((el) => el.style.display !== "none");
         sec.style.display = anyVisible ? "" : "none";
       });
-    setCount(nqq ? visible : null);
+    setCount(nqq || htVal !== "all" ? visible : null);
   }
 
   function onChange(v: string) {
     setQ(v);
     setOpen(true);
-    applyFilter(v);
+    applyFilter(v, ht);
+  }
+
+  function onHtChange(v: string) {
+    setHt(v);
+    applyFilter(q, v);
   }
 
   function pick(ten: string) {
     setQ(ten);
     setOpen(false);
-    applyFilter(ten);
+    applyFilter(ten, ht);
   }
 
   function clear() {
     setQ("");
+    setHt("all");
     setOpen(false);
-    applyFilter("");
+    applyFilter("", "all");
   }
 
   return (
@@ -110,6 +132,21 @@ export default function CongDoanSearch({ names }: { names: CdNameEntry[] }) {
             </ul>
           )}
         </div>
+        {hinhThes.length > 1 && (
+          <select
+            value={ht}
+            onChange={(e) => onHtChange(e.target.value)}
+            className="shrink-0 border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white dark:bg-slate-900 max-w-[180px]"
+            aria-label="Lọc theo hình thể"
+          >
+            <option value="all">Tất cả hình thể</option>
+            {hinhThes.map((h) => (
+              <option key={h} value={h}>
+                {h}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
       {count !== null && (
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">

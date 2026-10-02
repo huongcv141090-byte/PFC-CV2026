@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getStages, getFileNames, getSyncInfo } from "@/lib/data-server";
-import { imgUrl, type CongDoan } from "@/lib/data";
+import { getStages, getFileNames, getSyncInfo, getIndex } from "@/lib/data-server";
+import { imgUrl, hinhTheList, type CongDoan } from "@/lib/data";
 import CongDoanGallery from "@/components/CongDoanGallery";
 import CongDoanSearch from "./CongDoanSearch";
 import RefreshButton from "@/components/RefreshButton";
@@ -47,6 +47,19 @@ export default async function CongDoanBrandPage({
   const fileNames = await getFileNames();
   const sync = await getSyncInfo();
 
+  // file -> hinh_the map for the hinh-the filter
+  const index = await getIndex();
+  const brandInfo = index.brands.find((x) => x.id === params.brand);
+  const fileHinhThe: Record<string, string> = {};
+  for (const f of brandInfo?.files ?? []) {
+    fileHinhThe[`${params.brand}/${f.id}`] = f.hinh_the;
+  }
+  const hts = brandInfo ? hinhTheList(brandInfo) : [];
+  const cdHinhThe = (cd: CongDoan) =>
+    Array.from(
+      new Set(cd.files.map((f) => fileHinhThe[f.file]).filter(Boolean))
+    ).join("|");
+
   const ordered = stages.order
     .map((name) => b.stages[name])
     .filter(Boolean);
@@ -71,6 +84,7 @@ export default async function CongDoanBrandPage({
         names={ordered.flatMap((st) =>
           st.cong_doan.map((cd) => ({ id: cd.id, ten: cd.ten, stage: st.stage }))
         )}
+        hinhThes={hts.map((h) => h.name)}
       />
       <div className="mb-4">
         <RefreshButton lastSync={sync?.last_sync ?? null} />
@@ -171,7 +185,7 @@ export default async function CongDoanBrandPage({
               const t = timeRange(cd);
               const thumb = cd.images[0];
               return (
-                <li key={cd.id} data-cd-name={cd.ten} className="relative pl-8">
+                <li key={cd.id} data-cd-name={cd.ten} data-ht={cdHinhThe(cd)} className="relative pl-8">
                   <span className="absolute -left-[15px] top-3 flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 dark:bg-amber-400 text-white dark:text-slate-900 text-xs font-bold">
                     {idx + 1}
                   </span>

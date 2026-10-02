@@ -9,10 +9,12 @@ export default function FileList({
   brandId,
   brandName,
   files,
+  hideHeader,
 }: {
   brandId: string;
   brandName: string;
   files: FileInfo[];
+  hideHeader?: boolean;
 }) {
   const [q, setQ] = useState("");
   const filtered = useMemo(() => {
@@ -39,6 +41,7 @@ export default function FileList({
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center gap-3 md:justify-between">
+        {!hideHeader && (
         <div>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             <Link href="/" className="hover:underline">
@@ -53,6 +56,7 @@ export default function FileList({
             </span>
           </h1>
         </div>
+        )}
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}

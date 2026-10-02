@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getIndex, getImages, getSyncInfo } from "@/lib/data-server";
-import { imgUrl } from "@/lib/data";
+import { imgUrl, hinhTheList } from "@/lib/data";
 import RefreshButton from "@/components/RefreshButton";
 
 function StatCard({
@@ -57,6 +57,7 @@ export default async function Home() {
       <section className="grid md:grid-cols-2 gap-4">
         {index.brands.map((b) => {
           const sheets = b.files.reduce((n, f) => n + f.sheets.length, 0);
+          const hts = hinhTheList(b);
           const preview = b.files[0]?.images?.[0];
           return (
             <Link
@@ -82,10 +83,10 @@ export default async function Home() {
                 <div className="p-5">
                   <h2 className="text-xl font-bold">{b.name}</h2>
                   <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                    {b.files.length} file · {sheets} sheet
+                    {hts.length} hình thể · {b.files.length} file · {sheets} sheet
                   </p>
                   <span className="inline-block mt-3 text-sm font-medium text-amber-700 dark:text-amber-400 group-hover:underline">
-                    Xem danh sách file →
+                    Xem hình thể →
                   </span>
                 </div>
               </div>
