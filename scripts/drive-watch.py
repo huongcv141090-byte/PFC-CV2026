@@ -127,7 +127,16 @@ def main():
         rec = manifest.get(e["id"])
         if not rec:
             manifest[e["id"]] = {"name": e["name"], "path": e["path"],
+                                 "modified": e.get("modified", ""),
                                  "first_seen": now, "downloaded": False, "failed": 0}
+        elif "modified" not in rec:
+            # backfill for manifests created before modified-tracking (no re-download)
+            rec["modified"] = e.get("modified", "")
+        elif e.get("modified") and rec["modified"] != e["modified"]:
+            # file updated on Drive -> re-download after grace period
+            rec.update({"name": e["name"], "path": e["path"],
+                        "modified": e["modified"],
+                        "first_seen": now, "downloaded": False, "failed": 0})
 
     newly = []
     for e in files:
