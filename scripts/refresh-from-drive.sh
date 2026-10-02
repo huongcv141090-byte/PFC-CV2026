@@ -27,6 +27,9 @@ echo "=== [2/5] Build index + anh (build-data.py) ==="
 echo "=== [3/5] Trich xuat cong doan (extract-stages.py) ==="
 "$VPY" "$WEB/scripts/extract-stages.py" || { echo "WEB_REFRESH: extract-stages.py THAT BAI"; exit 1; }
 
+echo "=== [4/5] Kaizen Engine (kaizen-engine.py) ==="
+"$VPY" "$WEB/scripts/kaizen-engine.py" || { echo "WEB_REFRESH: kaizen-engine.py THAT BAI"; exit 1; }
+
 "$VPY" -c "
 import json, datetime
 meta = {'last_sync': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),

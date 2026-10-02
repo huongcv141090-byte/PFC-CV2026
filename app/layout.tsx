@@ -50,6 +50,12 @@ export default async function RootLayout({
                 Công đoạn
               </Link>
               <Link
+                href="/kaizen"
+                className="px-3 py-1.5 rounded hover:bg-white/10 transition"
+              >
+                🧠 Kaizen
+              </Link>
+              <Link
                 href="/gallery"
                 className="px-3 py-1.5 rounded hover:bg-white/10 transition"
               >

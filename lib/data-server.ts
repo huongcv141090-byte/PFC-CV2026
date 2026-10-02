@@ -88,3 +88,43 @@ export async function getSyncInfo(): Promise<SyncInfo | null> {
     return null;
   }
 }
+
+export interface KaizenRecommendation {
+  id: string;
+  rank: number;
+  type: string;
+  type_vi: string;
+  cong_doan: string;
+  brand: string;
+  stage: string;
+  score: number;
+  suggestion: string;
+  evidence: string;
+  ref_equipment: string[];
+}
+
+export interface KaizenData {
+  generated_at: string;
+  engine: string;
+  stats: {
+    n_cong_doan: number;
+    n_manual: number;
+    n_recommendations: number;
+    equipment_kb_tokens: number;
+  };
+  top_equipment: string[];
+  recommendations: KaizenRecommendation[];
+}
+
+let kaizenCache: KaizenData | null = null;
+
+export async function getKaizen(): Promise<KaizenData | null> {
+  try {
+    if (!kaizenCache) {
+      kaizenCache = JSON.parse(await fs.readFile(dataPath("kaizen.json"), "utf-8"));
+    }
+    return kaizenCache!;
+  } catch {
+    return null;
+  }
+}
