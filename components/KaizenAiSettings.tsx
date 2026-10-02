@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { isProvider, resolveModel } from "@/lib/llm-providers";
 
 export interface KaizenAiSettings {
   provider: string;
@@ -49,7 +50,7 @@ export const PROVIDER_DEFAULTS: Record<
   },
   groq: {
     label: "Groq (key miễn phí)",
-    model: "llama-3.3-70b-versatile",
+    model: "openai/gpt-oss-120b",
     keyUrl: "https://console.groq.com/keys",
     keyNote: "Key miễn phí",
   },
@@ -66,6 +67,7 @@ export function loadSettings(): KaizenAiSettings | null {
     if (!raw) return null;
     const s = JSON.parse(raw);
     if (!s?.provider || !s?.apiKey) return null;
+    if (isProvider(s.provider)) s.model = resolveModel(s.provider, s.model);
     return s as KaizenAiSettings;
   } catch {
     return null;

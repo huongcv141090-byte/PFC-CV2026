@@ -9,7 +9,7 @@ export const PROVIDERS = {
   anthropic: { label: "Anthropic Claude", defaultModel: "claude-3-5-haiku-latest" },
   experientiallabs: { label: "ExperientialLabs", defaultModel: "gpt-5.6-luna" },
   apmix: { label: "Apmix", defaultModel: "deepseek-v4.1-flash-free" },
-  xai: { label: "Grok (xAI)", defaultModel: "grok-4.7" },  groq: { label: "Groq (key miễn phí)", defaultModel: "llama-3.3-70b-versatile" },
+  xai: { label: "Grok (xAI)", defaultModel: "grok-4.7" },  groq: { label: "Groq (key miễn phí)", defaultModel: "openai/gpt-oss-120b" },
   moonshot: { label: "Kimi (Moonshot AI)", defaultModel: "kimi-k3" },
 } as const;
 
@@ -17,6 +17,19 @@ export type Provider = keyof typeof PROVIDERS;
 
 export function isProvider(p: unknown): p is Provider {
   return typeof p === "string" && p in PROVIDERS;
+}
+
+// Model Groq đã khai tử (16/08/2026) -> model thay thế chính thức
+const DEPRECATED_GROQ_MODELS: Record<string, string> = {
+  "llama-3.3-70b-versatile": "openai/gpt-oss-120b",
+  "llama-3.1-8b-instant": "openai/gpt-oss-20b",
+};
+
+export function resolveModel(provider: Provider, model: string): string {
+  const m = (model || "").trim();
+  if (provider === "groq" && DEPRECATED_GROQ_MODELS[m])
+    return DEPRECATED_GROQ_MODELS[m];
+  return m || PROVIDERS[provider].defaultModel;
 }
 
 async function callOpenAICompatible(
@@ -69,6 +82,7 @@ export async function callProvider(
   user: string,
   maxTokens = 2000
 ): Promise<string> {
+  model = resolveModel(provider, model);
   switch (provider) {
     case "gemini": {
       const res = await fetch(
