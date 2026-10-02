@@ -11,6 +11,7 @@ export interface FileInfo {
   name: string;
   group: string | null;
   hinh_the: string;
+  colors: string[];
   sizeMB: number;
   sheets: SheetInfo[];
   images: string[];
@@ -114,5 +115,30 @@ export function hinhTheList(brand: BrandInfo): HinhThe[] {
     name,
     slug: hinhTheSlug(name),
     files,
+  }));
+}
+
+export interface MauSac {
+  name: string;
+  slug: string;
+  files: FileInfo[];
+}
+
+export function mauSacSlug(color: string): string {
+  return hinhTheSlug(color);
+}
+
+export function mauSacList(files: FileInfo[]): MauSac[] {
+  const map = new Map<string, FileInfo[]>();
+  for (const f of files) {
+    for (const c of f.colors ?? []) {
+      if (!map.has(c)) map.set(c, []);
+      map.get(c)!.push(f);
+    }
+  }
+  return Array.from(map.entries()).map(([name, fs]) => ({
+    name,
+    slug: mauSacSlug(name),
+    files: fs,
   }));
 }

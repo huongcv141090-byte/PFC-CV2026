@@ -101,6 +101,23 @@ export default function FileList({
                     >
                       {f.name}
                     </p>
+                    {(f.colors ?? []).length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {f.colors.slice(0, 4).map((c) => (
+                          <span
+                            key={c}
+                            className="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-medium"
+                          >
+                            {c}
+                          </span>
+                        ))}
+                        {f.colors.length > 4 && (
+                          <span className="text-[11px] px-2 py-0.5 text-slate-500 dark:text-slate-400">
+                            +{f.colors.length - 4}
+                          </span>
+                        )}
+                      </div>
+                    )}
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
                       {formatMB(f.sizeMB)} · {f.sheets.length} sheet ·{" "}
                       {f.images.length} ảnh

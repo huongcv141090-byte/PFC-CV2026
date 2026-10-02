@@ -50,6 +50,30 @@ def hinh_the_for(group: str | None, filename: str) -> str:
     return "KHÁC"
 
 
+def colors_for(brand_id: str, sheets: list) -> list:
+    """Mau sac (colorways) of a file, from sheet names.
+
+    ADIDAS: sheets named IN_<COLOR> (e.g. IN_OLIVE THREE).
+    JILEON: leading LC sheets named by color (before the first
+    QTCN_/DMTG_/LUU TRINH_/IN sheet); later sheets are process sheets.
+    """
+    out = []
+    for s in sheets:
+        n = s["name"].strip()
+        u = n.upper()
+        if brand_id == "adidas":
+            if u.startswith("IN_"):
+                c = n[3:].strip()
+                if c and c not in out:
+                    out.append(c)
+        else:
+            if u.startswith(("QTCN", "ĐMTG", "DMTG", "LƯU TRÌNH", "LUU TRINH")) or u == "IN":
+                break
+            if n and n not in out:
+                out.append(n)
+    return out
+
+
 def read_sheets(path: str):
     from openpyxl import load_workbook
     wb = load_workbook(path, read_only=True, data_only=True)
@@ -173,6 +197,7 @@ def main() -> int:
                 "name": os.path.basename(path),
                 "group": group,
                 "hinh_the": hinh_the_for(group, os.path.basename(path)),
+                "colors": colors_for(b["id"], sheets),
                 "sizeMB": size_mb,
                 "sheets": sheets,
                 "images": sorted(set(md5s)),
