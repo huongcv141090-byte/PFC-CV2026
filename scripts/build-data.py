@@ -20,8 +20,8 @@ import re
 import sys
 import zipfile
 
-WEB_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC_DIR = "/home/hatch/workspace/drive-watch/files"
+WEB_DIR = os.environ.get("WEB_DIR", os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+SRC_DIR = os.environ.get("DRIVE_FILES_DIR", "/home/hatch/workspace/drive-watch/files")
 OUT_DATA = os.path.join(WEB_DIR, "public", "data")
 OUT_IMG = os.path.join(WEB_DIR, "public", "img")
 MAX_DIM = 900

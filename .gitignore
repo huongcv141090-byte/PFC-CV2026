@@ -37,3 +37,6 @@ next-env.d.ts
 
 # python
 __pycache__/
+
+# ci drive cache
+.drive-watch/

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getStages, getFileNames } from "@/lib/data-server";
+import { getStages, getFileNames, getSyncInfo } from "@/lib/data-server";
 import { imgUrl, type CongDoan } from "@/lib/data";
 import CongDoanGallery from "@/components/CongDoanGallery";
 import CongDoanSearch from "./CongDoanSearch";
-import SyncNote from "../SyncNote";
+import RefreshButton from "@/components/RefreshButton";
 
 export async function generateStaticParams() {
   const stages = await getStages();
@@ -45,6 +45,7 @@ export default async function CongDoanBrandPage({
   const b = stages.brands[params.brand];
   if (!b) notFound();
   const fileNames = await getFileNames();
+  const sync = await getSyncInfo();
 
   const ordered = stages.order
     .map((name) => b.stages[name])
@@ -72,7 +73,7 @@ export default async function CongDoanBrandPage({
         )}
       />
       <div className="mb-4">
-        <SyncNote />
+        <RefreshButton lastSync={sync?.last_sync ?? null} />
       </div>
 
       <div className="sticky top-[57px] z-30 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur py-2 mb-6 border-b border-slate-200 dark:border-slate-700">

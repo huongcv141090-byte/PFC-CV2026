@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { getStages } from "@/lib/data-server";
-import SyncNote from "./SyncNote";
+import { getStages, getSyncInfo } from "@/lib/data-server";
+import RefreshButton from "@/components/RefreshButton";
 
 export const metadata = {
   title: "Công đoạn sản xuất — PFC Visual Browser",
@@ -10,6 +10,7 @@ export const metadata = {
 
 export default async function CongDoanIndexPage() {
   const stages = await getStages();
+  const sync = await getSyncInfo();
 
   const cards = Object.values(stages.brands).map((b) => {
     const sts = Object.values(b.stages);
@@ -30,7 +31,7 @@ export default async function CongDoanIndexPage() {
         hàng.
       </p>
       <div className="mb-6">
-        <SyncNote />
+        <RefreshButton lastSync={sync?.last_sync ?? null} />
       </div>
       <div className="grid md:grid-cols-2 gap-4">
         {cards.map(({ b, nCd, nImg, stageNames }) => (

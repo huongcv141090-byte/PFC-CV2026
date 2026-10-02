@@ -17,8 +17,8 @@ from collections import Counter
 import xml.etree.ElementTree as ET
 from openpyxl import load_workbook
 
-SRC = "/home/hatch/workspace/drive-watch/files"
-WEB = "/home/hatch/workspace/pfc-web"
+SRC = os.environ.get("DRIVE_FILES_DIR", "/home/hatch/workspace/drive-watch/files")
+WEB = os.environ.get("WEB_DIR", "/home/hatch/workspace/pfc-web")
 IMG_INDEX = json.load(open(os.path.join(WEB, "public/data/images.json")))
 OUT = os.path.join(WEB, "public/data/stages.json")
 
