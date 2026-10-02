@@ -52,7 +52,7 @@ export default function GalleryClient({
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
           <a href="/" className="hover:underline">
             Tổng quan
           </a>{" "}
@@ -60,11 +60,11 @@ export default function GalleryClient({
         </p>
         <h1 className="text-2xl font-bold mt-1">
           Thư viện ảnh{" "}
-          <span className="text-base font-normal text-slate-500">
+          <span className="text-base font-normal text-slate-500 dark:text-slate-400">
             ({filtered.length}/{items.length} ảnh duy nhất)
           </span>
         </h1>
-        <p className="text-sm text-slate-600 mt-1">
+        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
           Ảnh minh họa công đoạn đã tách từ file Excel, khử trùng lặp.
         </p>
       </div>
@@ -76,7 +76,7 @@ export default function GalleryClient({
             className={`px-4 py-2 rounded-lg text-sm font-medium border transition ${
               brand === "all"
                 ? "bg-slate-900 text-white border-slate-900"
-                : "bg-white border-slate-300 hover:border-slate-400"
+                : "bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500"
             }`}
           >
             Tất cả
@@ -88,7 +88,7 @@ export default function GalleryClient({
               className={`px-4 py-2 rounded-lg text-sm font-medium border transition ${
                 brand === b.id
                   ? "bg-slate-900 text-white border-slate-900"
-                  : "bg-white border-slate-300 hover:border-slate-400"
+                  : "bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500"
               }`}
             >
               {b.name}
@@ -99,12 +99,12 @@ export default function GalleryClient({
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Tìm theo tên file chứa ảnh…"
-          className="w-full md:w-72 px-4 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+          className="w-full md:w-72 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
         />
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-slate-500 text-sm py-10 text-center">
+        <p className="text-slate-500 dark:text-slate-400 text-sm py-10 text-center">
           Không có ảnh nào khớp bộ lọc.
         </p>
       ) : (
@@ -113,7 +113,7 @@ export default function GalleryClient({
             <button
               key={it.md5}
               onClick={() => lb.open(i)}
-              className="group relative aspect-square bg-white rounded-lg border border-slate-200 overflow-hidden hover:border-amber-400 hover:shadow-md transition"
+              className="group relative aspect-square bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden hover:border-amber-400 hover:shadow-md transition"
               title={it.files.map((f) => fileNames[f] ?? f).join("\n")}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}

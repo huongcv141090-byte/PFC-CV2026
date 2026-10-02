@@ -26,7 +26,7 @@ export default function CongDoanGallery({
     <section>
       <h2 className="text-lg font-semibold mb-3">
         Hình ảnh minh họa{" "}
-        <span className="text-sm font-normal text-slate-500">
+        <span className="text-sm font-normal text-slate-500 dark:text-slate-400">
           ({images.length} ảnh)
         </span>
       </h2>
@@ -35,7 +35,7 @@ export default function CongDoanGallery({
           <button
             key={md5}
             onClick={() => open(i)}
-            className="group relative aspect-square overflow-hidden rounded-lg bg-slate-100 border border-slate-200"
+            className="group relative aspect-square overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
             title={`Xem ảnh ${i + 1}`}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -51,7 +51,7 @@ export default function CongDoanGallery({
       {shown < images.length && (
         <button
           onClick={() => setShown((s) => s + 48)}
-          className="mt-3 px-4 py-2 text-sm rounded-lg border border-slate-300 hover:bg-slate-100 transition"
+          className="mt-3 px-4 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
         >
           Xem thêm {images.length - shown} ảnh
         </button>

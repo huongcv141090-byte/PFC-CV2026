@@ -23,7 +23,7 @@ export default async function CongDoanIndexPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-2">Công đoạn sản xuất</h1>
-      <p className="text-slate-600 mb-6 max-w-3xl">
+      <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-3xl">
         Hệ thống hóa toàn bộ hồ sơ theo từng công đoạn: mỗi công đoạn gồm diễn
         giải chi tiết, thao tác, thông số kỹ thuật, điểm lưu ý, ghi chú và hình
         ảnh minh họa trực quan — sắp xếp đúng trình tự sản xuất của từng nhãn
@@ -37,23 +37,23 @@ export default async function CongDoanIndexPage() {
           <Link
             key={b.id}
             href={`/cong-doan/${b.id}`}
-            className="block bg-white border border-slate-200 rounded-xl p-6 hover:shadow-lg hover:border-amber-300 transition"
+            className="block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-6 hover:shadow-lg hover:border-amber-300 transition"
           >
             <h2 className="text-xl font-bold mb-1">{b.name}</h2>
-            <p className="text-sm text-slate-500 mb-3">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
               {nCd} công đoạn · {nImg.toLocaleString("vi-VN")} ảnh minh họa
             </p>
             <div className="flex flex-wrap gap-1.5">
               {stageNames.map((s) => (
                 <span
                   key={s}
-                  className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700"
+                  className="text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
                 >
                   {s}
                 </span>
               ))}
             </div>
-            <span className="inline-block mt-4 text-sm text-amber-700 font-medium">
+            <span className="inline-block mt-4 text-sm text-amber-700 dark:text-amber-400 font-medium">
               Xem hệ thống công đoạn →
             </span>
           </Link>

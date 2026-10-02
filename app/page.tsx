@@ -12,10 +12,10 @@ function StatCard({
   sub?: string;
 }) {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-      <p className="text-xs uppercase tracking-wide text-slate-500">{label}</p>
-      <p className="text-3xl font-bold mt-1 text-slate-900">{value}</p>
-      {sub && <p className="text-xs text-slate-500 mt-1">{sub}</p>}
+    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
+      <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</p>
+      <p className="text-3xl font-bold mt-1 text-slate-900 dark:text-slate-100">{value}</p>
+      {sub && <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{sub}</p>}
     </div>
   );
 }
@@ -35,7 +35,7 @@ export default async function Home() {
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
           Hồ sơ sản xuất PFC — xem trực quan
         </h1>
-        <p className="text-slate-600 mt-2 max-w-3xl">
+        <p className="text-slate-600 dark:text-slate-400 mt-2 max-w-3xl">
           Duyệt toàn bộ file Excel PFC theo từng nhãn hàng: xem cấu trúc sheet
           (định mức LC, lưu trình công đoạn, quy trình công nghệ, định mức
           thời gian) và ảnh minh họa từng công đoạn — tất cả trên một giao
@@ -58,10 +58,10 @@ export default async function Home() {
             <Link
               key={b.id}
               href={`/brand/${b.id}`}
-              className="group bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md hover:border-amber-300 transition"
+              className="group bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm hover:shadow-md hover:border-amber-300 transition"
             >
               <div className="flex">
-                <div className="w-36 h-32 shrink-0 bg-slate-100 flex items-center justify-center overflow-hidden">
+                <div className="w-36 h-32 shrink-0 bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
                   {preview ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -77,10 +77,10 @@ export default async function Home() {
                 </div>
                 <div className="p-5">
                   <h2 className="text-xl font-bold">{b.name}</h2>
-                  <p className="text-sm text-slate-600 mt-1">
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                     {b.files.length} file · {sheets} sheet
                   </p>
-                  <span className="inline-block mt-3 text-sm font-medium text-amber-700 group-hover:underline">
+                  <span className="inline-block mt-3 text-sm font-medium text-amber-700 dark:text-amber-400 group-hover:underline">
                     Xem danh sách file →
                   </span>
                 </div>
@@ -90,9 +90,9 @@ export default async function Home() {
         })}
       </section>
 
-      <section className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+      <section className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
         <h2 className="font-bold text-lg mb-2">Các loại sheet trong hồ sơ</h2>
-        <ul className="grid md:grid-cols-2 gap-2 text-sm text-slate-700">
+        <ul className="grid md:grid-cols-2 gap-2 text-sm text-slate-700 dark:text-slate-300">
           <li>
             <span className="font-mono font-semibold">LC*</span> — Bảng định
             mức vật tư theo style (Brand/Season/Article/Size/Color)

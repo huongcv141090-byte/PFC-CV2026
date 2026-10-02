@@ -72,7 +72,7 @@ export default function Lightbox({
         <img
           src={img.src}
           alt={img.caption ?? `Ảnh ${index + 1}`}
-          className="max-h-[78vh] max-w-full object-contain rounded shadow-2xl bg-white"
+          className="max-h-[78vh] max-w-full object-contain rounded shadow-2xl bg-white dark:bg-slate-900"
         />
         <div className="mt-3 text-center">
           {img.caption && (

@@ -40,7 +40,7 @@ export default function FileList({
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center gap-3 md:justify-between">
         <div>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             <Link href="/" className="hover:underline">
               Tổng quan
             </Link>{" "}
@@ -48,7 +48,7 @@ export default function FileList({
           </p>
           <h1 className="text-2xl font-bold mt-1">
             File PFC — {brandName}{" "}
-            <span className="text-base font-normal text-slate-500">
+            <span className="text-base font-normal text-slate-500 dark:text-slate-400">
               ({filtered.length}/{files.length})
             </span>
           </h1>
@@ -57,14 +57,14 @@ export default function FileList({
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Tìm theo tên file…"
-          className="w-full md:w-72 px-4 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+          className="w-full md:w-72 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
         />
       </div>
 
       {groups.map(([g, list]) => (
         <section key={g}>
           {g !== "—" && (
-            <h2 className="font-bold text-lg mb-3 text-slate-800">{g}</h2>
+            <h2 className="font-bold text-lg mb-3 text-slate-800 dark:text-slate-200">{g}</h2>
           )}
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {list.map((f) => {
@@ -73,9 +73,9 @@ export default function FileList({
                 <Link
                   key={f.id}
                   href={`/file/${brandId}/${f.id}`}
-                  className="group bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md hover:border-amber-300 transition"
+                  className="group bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm hover:shadow-md hover:border-amber-300 transition"
                 >
-                  <div className="h-32 bg-slate-100 overflow-hidden flex items-center justify-center">
+                  <div className="h-32 bg-slate-100 dark:bg-slate-800 overflow-hidden flex items-center justify-center">
                     {thumb ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -97,7 +97,7 @@ export default function FileList({
                     >
                       {f.name}
                     </p>
-                    <p className="text-xs text-slate-500 mt-2">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
                       {formatMB(f.sizeMB)} · {f.sheets.length} sheet ·{" "}
                       {f.images.length} ảnh
                     </p>
@@ -110,7 +110,7 @@ export default function FileList({
       ))}
 
       {filtered.length === 0 && (
-        <p className="text-slate-500 text-sm py-10 text-center">
+        <p className="text-slate-500 dark:text-slate-400 text-sm py-10 text-center">
           Không tìm thấy file nào khớp “{q}”.
         </p>
       )}

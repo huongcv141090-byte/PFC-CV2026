@@ -28,7 +28,7 @@ export default function FileDetail({
   return (
     <div className="space-y-8">
       <div>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
           <a href="/" className="hover:underline">
             Tổng quan
           </a>{" "}
@@ -41,26 +41,26 @@ export default function FileDetail({
         <h1 className="text-xl md:text-2xl font-bold mt-1 break-all">
           {file.name}
         </h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
           {formatMB(file.sizeMB)} · {file.sheets.length} sheet ·{" "}
           {file.images.length} ảnh minh họa
           {file.group ? ` · Nhóm: ${file.group}` : ""}
         </p>
       </div>
 
-      <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <section className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
         <button
           onClick={() => setShowSheets(!showSheets)}
-          className="w-full flex items-center justify-between px-5 py-3 font-bold text-left hover:bg-slate-50"
+          className="w-full flex items-center justify-between px-5 py-3 font-bold text-left hover:bg-slate-50 dark:hover:bg-slate-950"
         >
           <span>Danh sách sheet ({file.sheets.length})</span>
-          <span className="text-slate-400">{showSheets ? "▾" : "▸"}</span>
+          <span className="text-slate-400 dark:text-slate-500">{showSheets ? "▾" : "▸"}</span>
         </button>
         {showSheets && (
-          <div className="overflow-x-auto border-t border-slate-100">
+          <div className="overflow-x-auto border-t border-slate-100 dark:border-slate-800">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                <tr className="bg-slate-50 dark:bg-slate-950 text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   <th className="px-4 py-2">Sheet</th>
                   <th className="px-4 py-2 whitespace-nowrap">Dòng × Cột</th>
                   <th className="px-4 py-2">Tiêu đề cột</th>
@@ -70,18 +70,18 @@ export default function FileDetail({
                 {file.sheets.map((s, i) => (
                   <tr
                     key={i}
-                    className="border-t border-slate-100 hover:bg-amber-50/40"
+                    className="border-t border-slate-100 dark:border-slate-800 hover:bg-amber-50/40 dark:hover:bg-amber-950/40"
                   >
                     <td className="px-4 py-2 font-medium whitespace-nowrap">
                       {s.name}
                     </td>
-                    <td className="px-4 py-2 text-slate-600 whitespace-nowrap">
+                    <td className="px-4 py-2 text-slate-600 dark:text-slate-400 whitespace-nowrap">
                       {s.rows.toLocaleString("vi-VN")} ×{" "}
                       {s.cols.toLocaleString("vi-VN")}
                     </td>
-                    <td className="px-4 py-2 text-slate-600 text-xs">
+                    <td className="px-4 py-2 text-slate-600 dark:text-slate-400 text-xs">
                       {s.headers.filter(Boolean).join(" · ") || (
-                        <span className="text-slate-400 italic">
+                        <span className="text-slate-400 dark:text-slate-500 italic">
                           (không có dòng tiêu đề)
                         </span>
                       )}
@@ -99,7 +99,7 @@ export default function FileDetail({
           Ảnh minh họa ({file.images.length})
         </h2>
         {file.images.length === 0 ? (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             File này không có ảnh nhúng.
           </p>
         ) : (
@@ -110,7 +110,7 @@ export default function FileDetail({
                 <button
                   key={md5 + i}
                   onClick={() => lb.open(i)}
-                  className="group relative aspect-square bg-white rounded-lg border border-slate-200 overflow-hidden hover:border-amber-400 hover:shadow-md transition"
+                  className="group relative aspect-square bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden hover:border-amber-400 hover:shadow-md transition"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img

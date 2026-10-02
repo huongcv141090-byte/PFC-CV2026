@@ -18,7 +18,7 @@ export default async function SyncNote() {
   const s = await getSyncInfo();
   if (!s) return null;
   return (
-    <p className="text-xs text-slate-400">
+    <p className="text-xs text-slate-400 dark:text-slate-500">
       ⟳ Dữ liệu tự động đồng bộ từ Drive: {fmt(s.last_sync)}
     </p>
   );

@@ -80,28 +80,28 @@ export default function CongDoanSearch({ names }: { names: CdNameEntry[] }) {
               if (e.key === "Escape") clear();
             }}
             placeholder="Tìm nhanh tên công đoạn… (vd: phun keo, vat so)"
-            className="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 bg-white"
+            className="w-full border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 bg-white dark:bg-slate-900"
           />
           {q && (
             <button
               onClick={clear}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-lg leading-none"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 text-lg leading-none"
               aria-label="Xóa tìm kiếm"
             >
               ×
             </button>
           )}
           {open && suggestions.length > 0 && (
-            <ul className="absolute z-20 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden">
+            <ul className="absolute z-40 left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden">
               {suggestions.map((s) => (
                 <li key={s.id}>
                   <button
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => pick(s.ten)}
-                    className="w-full text-left px-4 py-2 hover:bg-amber-50 flex items-center justify-between gap-2"
+                    className="w-full text-left px-4 py-2 hover:bg-amber-50 dark:hover:bg-amber-950/60 flex items-center justify-between gap-2"
                   >
-                    <span className="text-sm text-slate-800 truncate">{s.ten}</span>
-                    <span className="text-[11px] text-slate-400 whitespace-nowrap">
+                    <span className="text-sm text-slate-800 dark:text-slate-200 truncate">{s.ten}</span>
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500 whitespace-nowrap">
                       {s.stage}
                     </span>
                   </button>
@@ -112,11 +112,11 @@ export default function CongDoanSearch({ names }: { names: CdNameEntry[] }) {
         </div>
       </div>
       {count !== null && (
-        <p className="text-xs text-slate-500 mt-2">
-          Tìm thấy <b className="text-slate-800">{count}</b> công đoạn
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+          Tìm thấy <b className="text-slate-800 dark:text-slate-200">{count}</b> công đoạn
           {count === 0 && " — thử từ khóa khác"}
           {" · "}
-          <button onClick={clear} className="text-amber-700 hover:underline">
+          <button onClick={clear} className="text-amber-700 dark:text-amber-400 hover:underline">
             Xóa lọc
           </button>
         </p>
