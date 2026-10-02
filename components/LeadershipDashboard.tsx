@@ -52,7 +52,7 @@ export default async function LeadershipDashboard() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-        <Kpi label="Công đoạn có định mức" value={String(d.kpis.totalCd)} sub="trên cả 2 nhãn hàng" />
+        <Kpi label="Công đoạn có định mức" value={String(d.kpis.totalCd)} sub={`trên cả ${Object.keys(stages.brands).length} nhãn hàng`} />
         <Kpi
           label="Tỷ lệ thủ công"
           value={`${d.kpis.pctManual.toFixed(1)}%`}
