@@ -32,6 +32,22 @@ export function resolveModel(provider: Provider, model: string): string {
   return m || PROVIDERS[provider].defaultModel;
 }
 
+async function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+/** POST với tự thử lại khi bị giới hạn tần suất (429): tối đa 3 lần, chờ 2s rồi 5s */
+async function postWithRetry(url: string, init: RequestInit): Promise<Response> {
+  let last: Response | null = null;
+  for (let i = 0; i < 3; i++) {
+    const res = await fetch(url, init);
+    if (res.status !== 429) return res;
+    last = res;
+    await sleep(i === 0 ? 2000 : 5000);
+  }
+  return last as Response;
+}
+
 async function callOpenAICompatible(
   baseUrl: string,
   apiKey: string,
@@ -40,7 +56,7 @@ async function callOpenAICompatible(
   user: string,
   maxTokens = 2000
 ): Promise<string> {
-  const res = await fetch(`${baseUrl}/chat/completions`, {
+  const res = await postWithRetry(`${baseUrl}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -85,7 +101,7 @@ export async function callProvider(
   model = resolveModel(provider, model);
   switch (provider) {
     case "gemini": {
-      const res = await fetch(
+      const res = await postWithRetry(
         `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
         {
           method: "POST",
@@ -115,7 +131,7 @@ export async function callProvider(
       return text;
     }
     case "anthropic": {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const res = await postWithRetry("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
