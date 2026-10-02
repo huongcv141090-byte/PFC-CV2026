@@ -47,18 +47,35 @@ export default async function CongDoanBrandPage({
   const fileNames = await getFileNames();
   const sync = await getSyncInfo();
 
-  // file -> hinh_the map for the hinh-the filter
+  // file -> hinh_the / colors maps for the filters
   const index = await getIndex();
   const brandInfo = index.brands.find((x) => x.id === params.brand);
   const fileHinhThe: Record<string, string> = {};
+  const fileColors: Record<string, string[]> = {};
   for (const f of brandInfo?.files ?? []) {
     fileHinhThe[`${params.brand}/${f.id}`] = f.hinh_the;
+    fileColors[`${params.brand}/${f.id}`] = f.colors ?? [];
   }
   const hts = brandInfo ? hinhTheList(brandInfo) : [];
   const cdHinhThe = (cd: CongDoan) =>
     Array.from(
       new Set(cd.files.map((f) => fileHinhThe[f.file]).filter(Boolean))
     ).join("|");
+  const cdColors = (cd: CongDoan) =>
+    Array.from(
+      new Set(cd.files.flatMap((f) => fileColors[f.file] ?? []))
+    ).join("|");
+  // color -> hinh_thes containing it (for scoping the color dropdown)
+  const colorHts: Record<string, Set<string>> = {};
+  for (const f of brandInfo?.files ?? []) {
+    for (const c of f.colors ?? []) {
+      if (!colorHts[c]) colorHts[c] = new Set();
+      colorHts[c].add(f.hinh_the);
+    }
+  }
+  const colorOptions = Object.entries(colorHts)
+    .map(([name, s]) => ({ name, hts: Array.from(s) }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const ordered = stages.order
     .map((name) => b.stages[name])
@@ -85,6 +102,7 @@ export default async function CongDoanBrandPage({
           st.cong_doan.map((cd) => ({ id: cd.id, ten: cd.ten, stage: st.stage }))
         )}
         hinhThes={hts.map((h) => h.name)}
+        colorOptions={colorOptions}
       />
       <div className="mb-4">
         <RefreshButton lastSync={sync?.last_sync ?? null} />
@@ -185,7 +203,7 @@ export default async function CongDoanBrandPage({
               const t = timeRange(cd);
               const thumb = cd.images[0];
               return (
-                <li key={cd.id} data-cd-name={cd.ten} data-ht={cdHinhThe(cd)} className="relative pl-8">
+                <li key={cd.id} data-cd-name={cd.ten} data-ht={cdHinhThe(cd)} data-colors={cdColors(cd)} className="relative pl-8">
                   <span className="absolute -left-[15px] top-3 flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 dark:bg-amber-400 text-white dark:text-slate-900 text-xs font-bold">
                     {idx + 1}
                   </span>

@@ -17,15 +17,23 @@ function norm(s: string): string {
 }
 
 
+export interface ColorOption {
+  name: string;
+  hts: string[];
+}
+
 export default function CongDoanSearch({
   names,
   hinhThes,
+  colorOptions,
 }: {
   names: CdNameEntry[];
   hinhThes: string[];
+  colorOptions: ColorOption[];
 }) {
   const [q, setQ] = useState("");
   const [ht, setHt] = useState("all");
+  const [mau, setMau] = useState("all");
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState<number | null>(null);
 
@@ -36,21 +44,34 @@ export default function CongDoanSearch({
     return names.filter((n) => norm(n.ten).includes(nq)).slice(0, 8);
   }, [nq, names]);
 
-  function matches(el: HTMLElement, nqq: string, htVal: string): boolean {
+  // color options scoped to the selected hinh the
+  const scopedColors = useMemo(
+    () =>
+      ht === "all"
+        ? colorOptions
+        : colorOptions.filter((c) => c.hts.includes(ht)),
+    [ht, colorOptions]
+  );
+
+  function matches(el: HTMLElement, nqq: string, htVal: string, mauVal: string): boolean {
     if (nqq && !norm(el.dataset.cdName ?? "").includes(nqq)) return false;
     if (htVal !== "all") {
       const hts = (el.dataset.ht ?? "").split("|");
       if (!hts.includes(htVal)) return false;
     }
+    if (mauVal !== "all") {
+      const colors = (el.dataset.colors ?? "").split("|");
+      if (!colors.includes(mauVal)) return false;
+    }
     return true;
   }
 
-  function applyFilter(query: string, htVal: string) {
+  function applyFilter(query: string, htVal: string, mauVal: string) {
     const nqq = norm(query.trim());
     const items = document.querySelectorAll<HTMLElement>("li[data-cd-name]");
     let visible = 0;
     items.forEach((el) => {
-      const hit = matches(el, nqq, htVal);
+      const hit = matches(el, nqq, htVal, mauVal);
       el.style.display = hit ? "" : "none";
       if (hit) visible++;
     });
@@ -62,31 +83,43 @@ export default function CongDoanSearch({
         ).some((el) => el.style.display !== "none");
         sec.style.display = anyVisible ? "" : "none";
       });
-    setCount(nqq || htVal !== "all" ? visible : null);
+    setCount(nqq || htVal !== "all" || mauVal !== "all" ? visible : null);
   }
 
   function onChange(v: string) {
     setQ(v);
     setOpen(true);
-    applyFilter(v, ht);
+    applyFilter(v, ht, mau);
   }
 
   function onHtChange(v: string) {
     setHt(v);
-    applyFilter(q, v);
+    // reset color if it doesn't belong to the newly selected hinh the
+    const nextMau =
+      v !== "all" && mau !== "all" && !colorOptions.some((c) => c.name === mau && c.hts.includes(v))
+        ? "all"
+        : mau;
+    setMau(nextMau);
+    applyFilter(q, v, nextMau);
+  }
+
+  function onMauChange(v: string) {
+    setMau(v);
+    applyFilter(q, ht, v);
   }
 
   function pick(ten: string) {
     setQ(ten);
     setOpen(false);
-    applyFilter(ten, ht);
+    applyFilter(ten, ht, mau);
   }
 
   function clear() {
     setQ("");
     setHt("all");
+    setMau("all");
     setOpen(false);
-    applyFilter("", "all");
+    applyFilter("", "all", "all");
   }
 
   return (
@@ -143,6 +176,21 @@ export default function CongDoanSearch({
             {hinhThes.map((h) => (
               <option key={h} value={h}>
                 {h}
+              </option>
+            ))}
+          </select>
+        )}
+        {scopedColors.length > 0 && (
+          <select
+            value={mau}
+            onChange={(e) => onMauChange(e.target.value)}
+            className="shrink-0 border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white dark:bg-slate-900 max-w-[200px]"
+            aria-label="Lọc theo màu sắc"
+          >
+            <option value="all">Tất cả màu sắc</option>
+            {scopedColors.map((c) => (
+              <option key={c.name} value={c.name}>
+                {c.name}
               </option>
             ))}
           </select>
