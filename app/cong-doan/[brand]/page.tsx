@@ -1,0 +1,202 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getStages, getFileNames } from "@/lib/data-server";
+import { imgUrl, type CongDoan } from "@/lib/data";
+import CongDoanGallery from "@/components/CongDoanGallery";
+
+export async function generateStaticParams() {
+  const stages = await getStages();
+  return Object.keys(stages.brands).map((brand) => ({ brand }));
+}
+
+function stageSlug(s: string) {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/[^a-z0-9]+/g, "-");
+}
+
+function timeRange(cd: CongDoan): string | null {
+  const vals = cd.files
+    .map((f) => f.thoi_gian_s)
+    .filter((v): v is number => typeof v === "number");
+  if (!vals.length) return null;
+  const lo = Math.min(...vals);
+  const hi = Math.max(...vals);
+  const fmt = (v: number) => (Number.isInteger(v) ? `${v}` : v.toFixed(1));
+  return lo === hi ? `${fmt(lo)} giây` : `${fmt(lo)}–${fmt(hi)} giây`;
+}
+
+function splitSteps(text: string): string[] {
+  const parts = text.split(/(?=\d+\.\s)/).map((s) => s.trim()).filter(Boolean);
+  return parts.length > 1 ? parts : [text];
+}
+
+export default async function CongDoanBrandPage({
+  params,
+}: {
+  params: { brand: string };
+}) {
+  const stages = await getStages();
+  const b = stages.brands[params.brand];
+  if (!b) notFound();
+  const fileNames = await getFileNames();
+
+  const ordered = stages.order
+    .map((name) => b.stages[name])
+    .filter(Boolean);
+
+  return (
+    <div>
+      <nav className="text-sm text-slate-500 mb-2">
+        <Link href="/cong-doan" className="hover:underline">
+          Công đoạn
+        </Link>{" "}
+        / <span className="text-slate-800 font-medium">{b.name}</span>
+      </nav>
+      <h1 className="text-2xl font-bold mb-1">
+        Hệ thống công đoạn — {b.name}
+      </h1>
+      <p className="text-slate-600 mb-4">
+        Sắp xếp đúng trình tự sản xuất. Bấm vào từng công đoạn để xem diễn
+        giải chi tiết, thao tác, thông số, lưu ý và ảnh minh họa.
+      </p>
+
+      <div className="sticky top-[57px] z-30 bg-slate-50/95 backdrop-blur py-2 mb-6 border-b border-slate-200">
+        <div className="flex gap-1.5 overflow-x-auto pb-1">
+          {ordered.map((st) => (
+            <a
+              key={st.stage}
+              href={`#${stageSlug(st.stage)}`}
+              className="whitespace-nowrap text-xs px-3 py-1.5 rounded-full bg-white border border-slate-300 hover:border-amber-400 hover:text-amber-700 transition"
+            >
+              {st.stage} ({st.cong_doan.length})
+            </a>
+          ))}
+        </div>
+      </div>
+
+      {ordered.map((st) => (
+        <section key={st.stage} id={stageSlug(st.stage)} className="mb-10 scroll-mt-32">
+          <div className="flex items-baseline gap-3 mb-4">
+            <h2 className="text-xl font-bold text-slate-900">{st.stage}</h2>
+            <span className="text-sm text-slate-500">
+              {st.cong_doan.length} công đoạn
+            </span>
+          </div>
+
+          {st.bang_chi_tiet.length > 0 && (
+            <details className="mb-4 bg-white border border-slate-200 rounded-xl overflow-hidden">
+              <summary className="px-4 py-3 cursor-pointer font-medium text-sm hover:bg-slate-50">
+                Bảng chi tiết {st.stage} ({st.bang_chi_tiet.length} bảng theo mã hàng)
+              </summary>
+              <div className="px-4 pb-4 space-y-4">
+                {st.bang_chi_tiet.slice(0, 3).map((t, ti) => (
+                  <div key={ti}>
+                    <p className="text-xs text-slate-500 mb-1">
+                      {fileNames[t.file] ?? t.file} · {t.sheet.trim()}
+                    </p>
+                    <div className="overflow-x-auto">
+                      <table className="text-xs w-full border-collapse">
+                        <thead>
+                          <tr className="bg-slate-100">
+                            {t.headers.map((h) => (
+                              <th key={h} className="border border-slate-200 px-2 py-1 text-left font-medium whitespace-nowrap">
+                                {h}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {t.rows.slice(0, 12).map((row, ri) => (
+                            <tr key={ri} className="odd:bg-white even:bg-slate-50">
+                              {t.headers.map((h) => (
+                                <td key={h} className="border border-slate-200 px-2 py-1 whitespace-nowrap">
+                                  {row[h] ?? ""}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {t.rows.length > 12 && (
+                      <p className="text-xs text-slate-400 mt-1">
+                        …và {t.rows.length - 12} dòng nữa
+                      </p>
+                    )}
+                  </div>
+                ))}
+                {st.bang_chi_tiet.length > 3 && (
+                  <p className="text-xs text-slate-400">
+                    …và {st.bang_chi_tiet.length - 3} bảng của các mã hàng khác
+                  </p>
+                )}
+              </div>
+            </details>
+          )}
+
+          {(st.qtcn_images?.length ?? 0) > 0 && (
+            <details className="mb-4 bg-white border border-slate-200 rounded-xl overflow-hidden">
+              <summary className="px-4 py-3 cursor-pointer font-medium text-sm hover:bg-slate-50">
+                Ảnh từ Quy trình công nghệ {st.stage} ({st.qtcn_images!.length} ảnh)
+              </summary>
+              <div className="px-4 pb-4">
+                <CongDoanGallery images={st.qtcn_images!} title={`QTCN ${st.stage}`} />
+              </div>
+            </details>
+          )}
+
+          <ol className="relative border-l-2 border-slate-200 ml-3 space-y-3">
+            {st.cong_doan.map((cd) => {
+              const t = timeRange(cd);
+              const thumb = cd.images[0];
+              return (
+                <li key={cd.id} className="relative pl-8">
+                  <span className="absolute -left-[15px] top-3 flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-white text-xs font-bold">
+                    {cd.stt ?? "·"}
+                  </span>
+                  <Link
+                    href={`/cong-doan/${params.brand}/${cd.id}`}
+                    className="flex gap-3 bg-white border border-slate-200 rounded-xl p-3 hover:shadow-md hover:border-amber-300 transition"
+                  >
+                    {thumb ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={imgUrl(thumb)}
+                        alt={cd.ten}
+                        loading="lazy"
+                        className="h-16 w-16 shrink-0 rounded-lg object-cover bg-slate-100"
+                      />
+                    ) : (
+                      <span className="h-16 w-16 shrink-0 rounded-lg bg-slate-100 flex items-center justify-center text-slate-300 text-xl">
+                        ◈
+                      </span>
+                    )}
+                    <span className="min-w-0">
+                      <span className="block font-semibold text-slate-900 leading-snug">
+                        {cd.ten}
+                      </span>
+                      <span className="block text-xs text-slate-500 mt-1">
+                        {[t ? `⏱ ${t}` : null, `${cd.files.length} mã hàng`, `${cd.images.length} ảnh`]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </span>
+                      {cd.files[0]?.dien_giai?.[0] && (
+                        <span className="block text-xs text-slate-600 mt-1 line-clamp-2">
+                          {splitSteps(cd.files[0].dien_giai[0])[0]}
+                        </span>
+                      )}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      ))}
+    </div>
+  );
+}

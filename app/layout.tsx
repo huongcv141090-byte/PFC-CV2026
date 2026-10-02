@@ -39,6 +39,12 @@ export default function RootLayout({
                 JILEON
               </Link>
               <Link
+                href="/cong-doan"
+                className="px-3 py-1.5 rounded hover:bg-white/10 transition"
+              >
+                Công đoạn
+              </Link>
+              <Link
                 href="/gallery"
                 className="px-3 py-1.5 rounded hover:bg-white/10 transition"
               >
