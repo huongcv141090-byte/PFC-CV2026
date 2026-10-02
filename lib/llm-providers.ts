@@ -11,6 +11,7 @@ export const PROVIDERS = {
   apmix: { label: "Apmix", defaultModel: "deepseek-v4.1-flash-free" },
   xai: { label: "Grok (xAI)", defaultModel: "grok-4.7" },
   groq: { label: "Groq — miễn phí", defaultModel: "llama-3.3-70b-versatile" },
+  moonshot: { label: "Kimi (Moonshot AI)", defaultModel: "kimi-k3" },
 } as const;
 
 export type Provider = keyof typeof PROVIDERS;
@@ -127,6 +128,8 @@ export async function callProvider(
       return callOpenAICompatible("https://api.x.ai/v1", apiKey, model, system, user, maxTokens);
     case "groq":
       return callOpenAICompatible("https://api.groq.com/openai/v1", apiKey, model, system, user, maxTokens);
+    case "moonshot":
+      return callOpenAICompatible("https://api.moonshot.ai/v1", apiKey, model, system, user, maxTokens);
     default:
       throw new Error("Nhà cung cấp không được hỗ trợ");
   }

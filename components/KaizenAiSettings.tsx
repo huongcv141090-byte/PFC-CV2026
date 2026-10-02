@@ -18,6 +18,7 @@ export const PROVIDER_DEFAULTS: Record<string, { label: string; model: string }>
   apmix: { label: "Apmix", model: "deepseek-v4.1-flash-free" },
   xai: { label: "Grok (xAI) — free", model: "grok-4.7" },
   groq: { label: "Groq — miễn phí", model: "llama-3.3-70b-versatile" },
+  moonshot: { label: "Kimi (Moonshot AI)", model: "kimi-k3" },
 };
 
 export function loadSettings(): KaizenAiSettings | null {
