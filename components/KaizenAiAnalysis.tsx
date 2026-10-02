@@ -74,6 +74,9 @@ export default function KaizenAiAnalysis({
             suggestion: rec.suggestion,
             evidence: rec.evidence,
             ref_equipment: rec.ref_equipment,
+            n_ghi_nhan: rec.n_ghi_nhan,
+            ma_hang: rec.ma_hang,
+            colors: rec.colors,
           },
         }),
       });

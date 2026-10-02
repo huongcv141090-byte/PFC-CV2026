@@ -91,7 +91,10 @@ export default function KaizenList({
                   {r.brand} · {r.stage}
                 </span>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div
+                className="flex items-center gap-2 shrink-0"
+                title={r.score_note}
+              >
                 <div className="w-20 h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500"
@@ -104,7 +107,28 @@ export default function KaizenList({
               </div>
             </div>
             <h3 className="font-bold text-slate-900 dark:text-slate-100">{r.cong_doan}</h3>
-            <p className="text-sm text-emerald-700 dark:text-emerald-400 mt-1">
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                🏷️ Nhãn hàng: <b>{r.brand}</b>
+              </span>
+              <span
+                className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+                title={r.ma_hang.join(", ")}
+              >
+                📦 Mã hàng: <b>{r.ma_hang.length}</b>
+                {r.ma_hang.length === 1 ? ` (${r.ma_hang[0]})` : ""}
+              </span>
+              <span
+                className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+                title={r.colors.join(", ")}
+              >
+                🎨 Màu sắc: <b>{r.colors.length}</b>
+              </span>
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                📝 {r.n_ghi_nhan} lượt ghi nhận
+              </span>
+            </div>
+            <p className="text-sm text-emerald-700 dark:text-emerald-400 mt-2">
               → {r.suggestion}
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
@@ -122,6 +146,38 @@ export default function KaizenList({
                 ))}
               </div>
             )}
+            <details className="mt-2">
+              <summary className="text-xs font-semibold text-sky-700 dark:text-sky-400 cursor-pointer hover:underline">
+                Chi tiết {r.n_ghi_nhan} lượt ghi nhận theo mã hàng và màu sắc
+              </summary>
+              <div className="mt-2 overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-left">
+                      <th className="px-2 py-1.5 font-semibold">Mã hàng</th>
+                      <th className="px-2 py-1.5 font-semibold">Màu sắc</th>
+                      <th className="px-2 py-1.5 font-semibold text-right">Thời gian/lần</th>
+                      <th className="px-2 py-1.5 font-semibold text-right">Người/lượt</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {r.breakdown.map((b, i) => (
+                      <tr
+                        key={i}
+                        className="border-t border-slate-100 dark:border-slate-800 text-slate-700 dark:text-slate-300"
+                      >
+                        <td className="px-2 py-1.5">{b.ma_hang}</td>
+                        <td className="px-2 py-1.5 text-slate-500 dark:text-slate-400">
+                          {b.colors.length > 0 ? b.colors.join(", ") : "—"}
+                        </td>
+                        <td className="px-2 py-1.5 text-right tabular-nums">{b.thoi_gian}</td>
+                        <td className="px-2 py-1.5 text-right tabular-nums">{b.nguoi}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
             <KaizenAiAnalysis rec={r} settings={aiSettings} />
           </article>
         ))}

@@ -100,6 +100,12 @@ export default async function KaizenPage() {
             ))}
           </div>
           <KaizenClient recs={kz.recommendations} />
+          <p className="text-[11px] text-slate-400 dark:text-slate-500">
+            Cách đọc: mỗi đề xuất tách rõ 3 chiều — nhãn hàng, mã hàng, màu sắc —
+            cùng số lượt ghi nhận thực tế (không gộp). Điểm ưu tiên = thời gian
+            trung bình × số mã hàng × (1 + biến động); đề xuất giảm lao động nhân
+            thêm với bình quân người/lượt. Di chuột lên thanh điểm để xem công thức.
+          </p>
         </>
       )}
     </div>

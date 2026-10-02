@@ -89,6 +89,14 @@ export async function getSyncInfo(): Promise<SyncInfo | null> {
   }
 }
 
+export interface KaizenBreakdownRow {
+  file: string;
+  ma_hang: string;
+  colors: string[];
+  thoi_gian: string;
+  nguoi: string;
+}
+
 export interface KaizenRecommendation {
   id: string;
   rank: number;
@@ -98,9 +106,14 @@ export interface KaizenRecommendation {
   brand: string;
   stage: string;
   score: number;
+  score_note: string;
   suggestion: string;
   evidence: string;
   ref_equipment: string[];
+  n_ghi_nhan: number;
+  ma_hang: string[];
+  colors: string[];
+  breakdown: KaizenBreakdownRow[];
 }
 
 export interface KaizenData {

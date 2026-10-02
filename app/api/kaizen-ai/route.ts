@@ -21,6 +21,8 @@ type Provider = keyof typeof PROVIDERS;
 
 function buildPrompt(rec: Record<string, unknown>): string {
   const eq = Array.isArray(rec.ref_equipment) ? rec.ref_equipment.join(", ") : "";
+  const mh = Array.isArray(rec.ma_hang) ? rec.ma_hang.join(", ") : "";
+  const cl = Array.isArray(rec.colors) ? rec.colors.join(", ") : "";
   return `Bạn là chuyên gia cải tiến sản xuất (kaizen) trong ngành sản xuất giày da tại Việt Nam, nhiều năm kinh nghiệm triển khai cơ giới hóa và chuẩn hóa thao tác trên chuyền may, chuyền gò.
 
 Hãy phân tích chuyên sâu đề xuất cải tiến sau đây. Toàn bộ câu trả lời viết bằng tiếng Việt đầy đủ, tuyệt đối không viết tắt (ví dụ viết "trung bình" thay vì "TB", "thủ công" thay vì "TC").
@@ -29,6 +31,7 @@ THÔNG TIN ĐỀ XUẤT:
 - Loại cải tiến: ${rec.type_vi}
 - Công đoạn: ${rec.cong_doan}
 - Nhãn hàng: ${rec.brand} — Công đoạn sản xuất: ${rec.stage}
+- Phạm vi dữ liệu: ${rec.n_ghi_nhan} lượt ghi nhận · ${mh ? `các mã hàng: ${mh}` : ""} · ${cl ? `các màu sắc: ${cl}` : ""}
 - Điểm ưu tiên: ${rec.score}
 - Đề xuất: ${rec.suggestion}
 - Bằng chứng từ dữ liệu thực tế: ${rec.evidence}
