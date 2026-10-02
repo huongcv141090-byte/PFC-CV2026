@@ -22,7 +22,8 @@ WEB = os.environ.get("WEB_DIR", "/home/hatch/workspace/pfc-web")
 IMG_INDEX = json.load(open(os.path.join(WEB, "public/data/images.json")))
 OUT = os.path.join(WEB, "public/data/stages.json")
 
-BRANDS = [("adidas", "ADIDAS"), ("jileon", "JILEON")]
+BRANDS = [(b["id"], b["name"]) for b in
+          json.load(open(os.path.join(WEB, "public/data/index.json")))["brands"]]
 STAGE_ORDER = ["CHẶT", "CÁN", "CÁN LUYỆN", "IN", "MAY", "GÒ", "THÀNH HÌNH",
                "HOÀN TẤT", "KCS"]
 

@@ -36,18 +36,20 @@ def slugify(name: str) -> str:
     return s or "file"
 
 
-def hinh_the_for(group: str | None, filename: str) -> str:
-    """Hinh the (product silhouette): subfolder name, or parsed from filename.
+def hinh_the_for(group: str | None, filename: str, brand_name: str) -> str:
+    """Hinh the (product silhouette): subfolder name, parsed from filename,
+    or the brand name itself (e.g. TERRA files have no product in filename).
 
     e.g. JILEON/ANKLE BOOTS/*.xlsx -> "ANKLE BOOTS";
-    260627_PFC_ADIDAS RAINBOOT W.xlsx -> "RAINBOOT W".
+    260627_PFC_ADIDAS RAINBOOT W.xlsx -> "RAINBOOT W";
+    260624_PFC_TERRA.xlsx -> "TERRA".
     """
     if group:
         return group
     m = re.match(r"^\d+_PFC_[A-Za-z]+\s+(.+)\.xlsx?$", filename, re.I)
     if m:
         return re.sub(r"\s+", " ", m.group(1)).strip().upper()
-    return "KHÁC"
+    return brand_name.upper()
 
 
 def colors_for(brand_id: str, sheets: list) -> list:
@@ -158,8 +160,10 @@ def main() -> int:
     os.makedirs(OUT_IMG, exist_ok=True)
 
     brands = [
-        {"id": "adidas", "name": "ADIDAS", "dir": os.path.join(SRC_DIR, "ADIDAS")},
-        {"id": "jileon", "name": "JILEON", "dir": os.path.join(SRC_DIR, "JILEON")},
+        {"id": slugify(d), "name": d,
+         "dir": os.path.join(SRC_DIR, d)}
+        for d in sorted(os.listdir(SRC_DIR))
+        if os.path.isdir(os.path.join(SRC_DIR, d)) and not d.startswith(".")
     ]
 
     image_store = {}   # md5 -> {"w":, "h":, "files": set}
@@ -196,7 +200,7 @@ def main() -> int:
                 "id": fid,
                 "name": os.path.basename(path),
                 "group": group,
-                "hinh_the": hinh_the_for(group, os.path.basename(path)),
+                "hinh_the": hinh_the_for(group, os.path.basename(path), b["name"]),
                 "colors": colors_for(b["id"], sheets),
                 "sizeMB": size_mb,
                 "sheets": sheets,
@@ -242,7 +246,7 @@ def main() -> int:
                 continue
             pub_size += os.path.getsize(os.path.join(root, f))
     print("=" * 50)
-    print(f"brands=2 files={n_files} sheets={total_sheets} "
+    print(f"brands={len(out_brands)} files={n_files} sheets={total_sheets} "
           f"unique_images={len(images_json)} skipped={skipped}")
     print(f"public/ size = {pub_size / 1048576:.1f} MB")
     return 0

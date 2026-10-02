@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
 import ThemeToggle from "@/components/ThemeToggle";
+import { getIndex } from "@/lib/data-server";
 
 export const metadata: Metadata = {
   title: "PFC Visual Browser — Hồ sơ sản xuất trực quan",
@@ -11,9 +12,10 @@ export const metadata: Metadata = {
 
 const THEME_INIT = `(function(){try{var t=localStorage.getItem('pfc-theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();`;
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const index = await getIndex();
   return (
     <html lang="vi" suppressHydrationWarning>
       <head>
@@ -32,18 +34,15 @@ export default function RootLayout({
               >
                 Tổng quan
               </Link>
-              <Link
-                href="/brand/adidas"
-                className="px-3 py-1.5 rounded hover:bg-white/10 transition"
-              >
-                ADIDAS
-              </Link>
-              <Link
-                href="/brand/jileon"
-                className="px-3 py-1.5 rounded hover:bg-white/10 transition"
-              >
-                JILEON
-              </Link>
+              {index.brands.map((b) => (
+                <Link
+                  key={b.id}
+                  href={`/brand/${b.id}`}
+                  className="px-3 py-1.5 rounded hover:bg-white/10 transition"
+                >
+                  {b.name}
+                </Link>
+              ))}
               <Link
                 href="/cong-doan"
                 className="px-3 py-1.5 rounded hover:bg-white/10 transition"
