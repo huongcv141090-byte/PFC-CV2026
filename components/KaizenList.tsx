@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import type { KaizenRecommendation } from "@/lib/data-server";
+import KaizenAiAnalysis from "./KaizenAiAnalysis";
+import type { KaizenAiSettings } from "./KaizenAiSettings";
 
 const TYPE_TONE: Record<string, string> = {
   THAY_THU_CONG: "bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300",
@@ -13,8 +15,10 @@ const TYPE_TONE: Record<string, string> = {
 
 export default function KaizenList({
   recs,
+  aiSettings,
 }: {
   recs: KaizenRecommendation[];
+  aiSettings: KaizenAiSettings | null;
 }) {
   const [type, setType] = useState("all");
   const [brand, setBrand] = useState("all");
@@ -118,6 +122,7 @@ export default function KaizenList({
                 ))}
               </div>
             )}
+            <KaizenAiAnalysis rec={r} settings={aiSettings} />
           </article>
         ))}
         {filtered.length === 0 && (

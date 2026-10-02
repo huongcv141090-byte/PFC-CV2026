@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getKaizen } from "@/lib/data-server";
-import KaizenList from "@/components/KaizenList";
+import KaizenClient from "@/components/KaizenClient";
 
 const LAYERS = [
   {
@@ -11,7 +11,7 @@ const LAYERS = [
   {
     icon: "🔢",
     name: "Feature",
-    desc: "Vector đặc trưng mỗi công đoạn: thời gian TB, biến động, thủ công, số người",
+    desc: "Vector đặc trưng mỗi công đoạn: thời gian trung bình, biến động, thủ công, số người",
   },
   {
     icon: "🧠",
@@ -99,7 +99,7 @@ export default async function KaizenPage() {
               </div>
             ))}
           </div>
-          <KaizenList recs={kz.recommendations} />
+          <KaizenClient recs={kz.recommendations} />
         </>
       )}
     </div>

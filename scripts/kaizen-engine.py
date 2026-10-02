@@ -56,10 +56,24 @@ def num(x) -> float:
 
 def fmt_sec(s: float) -> str:
     if s >= 3600:
-        return f"{s/3600:.1f} giờ"
+        return f"{s/3600:.1f} giờ".replace(".", ",")
     if s >= 60:
-        return f"{s/60:.1f} phút"
-    return f"{s:.1f} giây"
+        return f"{s/60:.1f} phút".replace(".", ",")
+    return f"{s:.1f} giây".replace(".", ",")
+
+
+# Viet hoa viet tat thiet bi trong du lieu goc (cot MAY MOC-T BI)
+EQUIP_ABBR = {
+    "TC": "Thủ công",
+    "1k": "Máy may 1 kim",
+    "1K": "Máy may 1 kim",
+}
+
+NO_EQUIP = {"Thủ công"}  # "thu cong" = khong co may, khong tinh la thiet bi
+
+
+def expand_equip(name: str) -> str:
+    return EQUIP_ABBR.get(name.strip(), name.strip())
 
 
 MANUAL_HINTS = ["mài tay", "thủ công", "chỉnh sửa", "vệ sinh"]
@@ -87,13 +101,14 @@ def main():
                 for f in cd["files"]:
                     dc = f.get("dung_cu")
                     if isinstance(dc, list):
-                        equip.update(str(t).strip() for t in dc if str(t).strip())
+                        equip.update(expand_equip(t) for t in dc if str(t).strip())
                     elif isinstance(dc, str) and dc.strip():
-                        equip.add(dc.strip())
+                        equip.add(expand_equip(dc))
                     tb = f.get("thiet_bi")
                     if tb and str(tb).strip():
-                        equip.add(str(tb).strip())
+                        equip.add(expand_equip(tb))
                     workers += num(f.get("nguoi"))
+                equip.discard("Thủ công")  # thu cong = khong co may
                 avg = sum(times) / len(times)
                 mx, mn = max(times), min(times)
                 feats.append({
@@ -156,8 +171,10 @@ def main():
         if not sims:
             continue
         best_eq = sorted({e for _, g in sims for e in g["equip"]})[:3]
+        if not best_eq:
+            continue  # khong tim duoc thiet bi cu the de de xuat
         score = f["avg"] * f["n"] * (1 + f["var"])
-        ev = (f"TB {fmt_sec(f['avg'])}/lần × {f['n']} mã hàng, làm thủ công. "
+        ev = (f"Trung bình {fmt_sec(f['avg'])}/lần × {f['n']} mã hàng, làm thủ công. "
               f"Công đoạn tương tự đã dùng máy: " +
               "; ".join(f"“{g['ten'][:40]}” ({g['brand']})" for _, g in sims[:2]))
         add("THAY_THU_CONG", "Thay thủ công bằng máy", f, score,
@@ -188,9 +205,10 @@ def main():
     for f in sorted(feats, key=lambda x: -x["workers"])[:12]:
         if f["workers"] >= 3:
             score = f["workers"] * f["avg"] * 0.3
+            workers_txt = f"{f['workers']:.1f}".replace(".", ",")
             add("GIAM_NGUOI", "Giảm lao động", f, score,
-                "Xem xét jig/gá định vị hoặc bán tự động để giảm người thao tác",
-                f"Tổng {f['workers']:.1f} người/lần × {f['n']} mã hàng, TB {fmt_sec(f['avg'])}/lần")
+                "Xem xét đồ gá định vị hoặc bán tự động để giảm người thao tác",
+                f"Tổng {workers_txt} người/lần × {f['n']} mã hàng, trung bình {fmt_sec(f['avg'])}/lần")
 
     # 4. Chuan hoa thoi gian: bien dong lon
     for f in sorted([x for x in feats if x["n"] >= 3], key=lambda x: -x["var"])[:10]:
