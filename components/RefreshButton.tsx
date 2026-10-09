@@ -172,7 +172,7 @@ export default function RefreshButton({ lastSync }: { lastSync: string | null })
         </button>
         {lastSync && phase === "idle" && (
           <span className="text-xs text-slate-400 dark:text-slate-500">
-            Lần đồng bộ gần nhất: {fmt(lastSync)}
+            Dữ liệu tự động đồng bộ từ Drive: {fmt(lastSync)}
           </span>
         )}
         {(phase === "working" || phase === "done") && note && (
