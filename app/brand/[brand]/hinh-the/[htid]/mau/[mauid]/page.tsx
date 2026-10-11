@@ -52,7 +52,7 @@ export default async function MauSacPage({
         <h1 className="text-2xl font-bold mt-1">
           Mã hàng — {color.name}{" "}
           <span className="text-base font-normal text-slate-500 dark:text-slate-400">
-            ({color.files.length} mã hàng)
+            ({color.files.length} file)
           </span>
         </h1>
       </div>

@@ -29,7 +29,7 @@ export default async function BrandPage({
         <h1 className="text-2xl font-bold mt-1">
           Hình thể — {brand.name}{" "}
           <span className="text-base font-normal text-slate-500 dark:text-slate-400">
-            ({hts.length} hình thể · {brand.files.length} mã hàng)
+            ({hts.length} hình thể · {brand.files.length} file)
           </span>
         </h1>
       </div>
@@ -62,7 +62,7 @@ export default async function BrandPage({
               <div className="p-4">
                 <p className="font-bold leading-snug">{ht.name}</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                  {ht.files.length} mã hàng · {sheets} sheet
+                  {ht.files.length} file · {sheets} sheet
                 </p>
               </div>
             </Link>

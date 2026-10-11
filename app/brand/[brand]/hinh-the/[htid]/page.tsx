@@ -37,7 +37,7 @@ export default async function HinhThePage({
         <h1 className="text-2xl font-bold mt-1">
           Màu sắc — {ht.name}{" "}
           <span className="text-base font-normal text-slate-500 dark:text-slate-400">
-            ({colors.length} màu · {ht.files.length} mã hàng)
+            ({colors.length} màu · {ht.files.length} file)
           </span>
         </h1>
       </div>
@@ -69,7 +69,7 @@ export default async function HinhThePage({
               <div className="p-4">
                 <p className="font-bold leading-snug">{c.name}</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                  {c.files.length} mã hàng
+                  {c.files.length} file
                 </p>
               </div>
             </Link>

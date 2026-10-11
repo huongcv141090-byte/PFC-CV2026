@@ -130,7 +130,7 @@ export function computeDashboard(stages: StagesData): DashboardData {
   }
   if (variances.length) {
     highlights.push(
-      `${variances.length} công đoạn chênh lệch trên 30% giữa các mã hàng — cần chuẩn hóa định mức và thao tác`
+      `${variances.length} công đoạn chênh lệch trên 30% giữa các lượt ghi nhận — cần chuẩn hóa định mức và thao tác`
     );
   }
 

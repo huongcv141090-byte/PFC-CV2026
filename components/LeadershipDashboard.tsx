@@ -66,7 +66,7 @@ export default async function LeadershipDashboard() {
         <Kpi
           label="Tổng thời gian định mức"
           value={`${d.kpis.totalHours.toFixed(0)} giờ`}
-          sub="cộng dồn mọi công đoạn × mã hàng"
+          sub="cộng dồn toàn bộ lượt ghi nhận"
         />
       </div>
 
@@ -181,7 +181,7 @@ export default async function LeadershipDashboard() {
             📏 Chênh lệch cần chuẩn hóa
           </p>
           <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-            Cùng công đoạn nhưng thời gian khác xa giữa các mã hàng
+            Cùng công đoạn nhưng thời gian khác xa giữa các lượt ghi nhận
           </p>
           {d.variances.length === 0 ? (
             <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -196,7 +196,7 @@ export default async function LeadershipDashboard() {
                     <span className="ml-1.5 text-[10px] text-slate-400">{m.brandName}</span>
                   </span>
                   <span className="text-[11px] font-medium text-sky-700 dark:text-sky-400 whitespace-nowrap tabular-nums">
-                    chênh {(m.variance * 100).toFixed(0)}% · {m.nFiles} mã hàng
+                    chênh {(m.variance * 100).toFixed(0)}% · {m.nFiles} lượt ghi nhận
                   </span>
                 </div>
               ))}

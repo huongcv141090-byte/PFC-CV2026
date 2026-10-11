@@ -218,7 +218,7 @@ export default async function CongDoanBrandPage({
           {st.bang_chi_tiet.length > 0 && (
             <details className="mb-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
               <summary className="px-4 py-3 cursor-pointer font-medium text-sm hover:bg-slate-50 dark:hover:bg-slate-950">
-                Bảng chi tiết {st.stage} ({st.bang_chi_tiet.length} bảng theo mã hàng)
+                Bảng chi tiết {st.stage} ({st.bang_chi_tiet.length} bảng theo file)
               </summary>
               <div className="px-4 pb-4 space-y-4">
                 {st.bang_chi_tiet.slice(0, 3).map((t, ti) => (
@@ -259,7 +259,7 @@ export default async function CongDoanBrandPage({
                 ))}
                 {st.bang_chi_tiet.length > 3 && (
                   <p className="text-xs text-slate-400 dark:text-slate-500">
-                    …và {st.bang_chi_tiet.length - 3} bảng của các mã hàng khác
+                    …và {st.bang_chi_tiet.length - 3} bảng của các file khác
                   </p>
                 )}
               </div>
@@ -320,7 +320,7 @@ export default async function CongDoanBrandPage({
                         {cd.ten}
                       </Link>
                       <span className="block text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        {[t ? `⏱ ${t}` : null, `${cd.files.length} mã hàng`, `${cd.images.length} ảnh`]
+                        {[t ? `⏱ ${t}` : null, `${cd.files.length} lượt ghi nhận`, `${cd.images.length} ảnh`]
                           .filter(Boolean)
                           .join(" · ")}
                       </span>
@@ -363,7 +363,7 @@ export default async function CongDoanBrandPage({
                   {cd.files.length > 0 && (
                     <details className="mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
                       <summary className="px-3 py-2 cursor-pointer text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-950">
-                        Định mức thời gian ({cd.files.length} mã hàng{scopeLabel ? ` — ${scopeLabel}` : ""})
+                        Định mức thời gian ({cd.files.length} lượt ghi nhận{scopeLabel ? ` — ${scopeLabel}` : ""})
                       </summary>
                       <div className="overflow-x-auto px-3 pb-3">
                         <table className="w-full text-xs">

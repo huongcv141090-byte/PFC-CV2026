@@ -95,7 +95,7 @@ export default async function CongDoanDetailPage({
               {brandName}
             </span>
             <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
-              {cd.files.length} mã hàng · {cd.images.length} ảnh
+              {cd.files.length} lượt ghi nhận · {cd.images.length} ảnh
             </span>
           </div>
         </div>
